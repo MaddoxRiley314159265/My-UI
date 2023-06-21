@@ -153,7 +153,7 @@ class menu_element:
     def display(self):
         pass #Display
 class button(menu_element):
-    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), highlight_col = (240,240,240), border_width = 20, border_color = (0,0,0), text = "Button", font : pygame.font.Font = f1, text_col = (0,0,0), inflate_on_hightlight = 2, inflate_on_click = 4) -> None:
+    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), highlight_col = (240,240,240), border_width = 20, border_color = (0,0,0), text = "Button", font : pygame.font.Font = f1, text_col = (0,0,0), inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
         super().__init__(pos, align)
         self.d = dimensions
         p = self.aligned_pos(self.d)

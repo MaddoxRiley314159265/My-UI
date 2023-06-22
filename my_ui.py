@@ -1,11 +1,12 @@
 import pygame
+from textwrap import fill
 from VectorUtil import *
 from VectorUtil import c
 pygame.init()
 f1 = pygame.font.SysFont("Helvetica", 500)
 
 display_dimensions = (-1, -1)
-screen = -1
+screen : pygame.Surface = -1
 clock = pygame.time.Clock()
 
 #List of the available menus
@@ -30,7 +31,86 @@ def next_menu():
 def say_hello():
     print("Hello!")
 
+#----------------------------------------------------------Handy Functions-------------------------------------------------\
+'''
+def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect):
+    newline_index = 1
+    split_points = text.split(" ")
+    i=0
+    for word in split_points:
+        my_r = font.render(word, True, font_col)
+        w_to_h = my_r.get_rect().width/my_r.get_rect().height
+        while fit_rect.height*w_to_h>fit_rect.width:
+            #print(f"{}")
+            #Word is too long
 
+            split_p = i+len(word)-newline_index
+            text = text[:split_p+1]+"\n"+text[split_p+1:]
+            word = word[:len(word)-newline_index+1]+"\n"+word[-newline_index:]
+
+            my_r = font.render(word, True, font_col)
+            print(word)
+            print(f"Width: {my_r.get_rect().width}, Height: {my_r.get_rect().height}")
+            w_to_h = my_r.get_rect().width/my_r.get_rect().height
+            newline_index+=1
+
+        i+=len(word)+1
+
+    def_rect = font.render(text, True, font_col).get_rect()
+    w_to_h = def_rect.width/def_rect.height
+
+    newline_index = 2
+    while fit_rect.height*w_to_h>fit_rect.width:
+        if newline_index==len(split_points):
+            #All words have been shifted down
+            break
+
+        text = ""
+        for i, word in enumerate(split_points):
+            if i>len(split_points)-newline_index:
+                ending = "\n"
+            else: ending = " "
+
+            text+=word+ending
+
+        newline_index+=1
+        def_rect = font.render(text, True, font_col).get_rect()
+        w_to_h = def_rect.width/def_rect.height
+
+    return pygame.transform.scale(font.render(text, True, font_col), (fit_rect.height*w_to_h, fit_rect.height))
+'''
+def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect):
+    wrap = len(text)-1
+
+    w, h = font.render(text, True, font_col).get_rect().size
+    w_to_h = w/h
+
+    formatted_text = text
+    while paragraph_dim(formatted_text, font_col, font, fit_rect.height)[0]>fit_rect.width:
+        if wrap<=0:
+            break
+        formatted_text = fill(text, wrap)
+
+        wrap-=1
+
+    if wrap<=0:
+        print("ERROR: could not wrap text:", text)
+        return
+    return render_paragraph(formatted_text, font_col, font, fit_rect)
+def paragraph_dim(text : str, font_col, font : pygame.font.Font, height):
+    width = 0
+    for line in text.split("\n"):
+        w, h = font.render(line, True, font_col).get_rect().size
+
+        w_to_h = w/h
+        h = height/(1+text.count("\n"))
+
+        if h*w_to_h>width: width = h*w_to_h
+    return width, height*(1+text.count("\n"))
+def render_paragraph(text : str, font_col, font : pygame.font.Font, rect : pygame.Rect):
+    for i, line in enumerate(text.split("\n")):
+        h = rect.height/(1+text.count("\n"))
+        screen.blit(pygame.transform.scale(font.render(line, True, font_col), (rect.width,h)), (rect.left, rect.top+i*h))
 
 #-------------------------------------------------------Menu Stuff---------------------------------------------------------------
 
@@ -153,53 +233,122 @@ class menu_element:
     def display(self):
         pass #Display
 class button(menu_element):
-    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), highlight_col = (240,240,240), border_width = 20, border_color = (0,0,0), text = "Button", font : pygame.font.Font = f1, text_col = (0,0,0), inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
+    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), img : pygame.Surface = None, highlight_col = (240,240,240), highlight_img : pygame.Surface = None, border_width = 20, border_color = (0,0,0), border_img : pygame.Surface = None, text = "Buttonkjsdfhksjdfh", font : pygame.font.Font = f1, text_col = (0,0,0), inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
         super().__init__(pos, align)
         self.d = dimensions
         p = self.aligned_pos(self.d)
         self.o_r = pygame.Rect(p.x, display_dimensions[1]-p.y, self.d.x, self.d.y)
         self.r = self.o_r
 
+        self.o_i = img
+        self.i = self.o_i
+        self.h_i = highlight_img
+
         self.o_col = col
         self.col = self.o_col
         self.h_col = highlight_col
+
         self.b_w = border_width
         self.b_col = border_color
+        self.b_i = border_img
+
 
         self.t = text
         self.t_col = text_col
         self.f = font
         self.func = action
 
+
         self.i_h = inflate_on_hightlight
         self.i_c = inflate_on_click
+
+        self.m_c = multiple_calls
+        self.acitvate_on_click = True
     def update(self, mouse_pos: c, clicking: bool, key_down=None):
         global update_display
+        
         #If mouse hovering
         if self.r.collidepoint(mouse_pos[0], mouse_pos[1]):
             if not self.r==self.o_r.inflate(self.i_h, self.i_h):
                 self.r = self.o_r.inflate(self.i_h, self.i_h)
-                self.col = self.h_col
+
+                if self.h_i==None: self.col = self.h_col
+                else: self.i = self.h_i
                 update_display = True
             #If button clicked
-            if clicking and not self.r==self.o_r.inflate(self.i_c, self.i_c):
-                self.r = self.o_r.inflate(self.i_c, self.i_c)
+            if clicking and self.acitvate_on_click:
+                if not self.r==self.o_r.inflate(self.i_c, self.i_c):
+                    self.r = self.o_r.inflate(self.i_c, self.i_c)
+                    update_display = True
                 self.func()
-                update_display = True
+                #Only activate once
+                if not self.m_c:
+                    self.acitvate_on_click = False
+            elif not clicking and not self.acitvate_on_click:
+                #Reset to activate once clicked again
+                self.acitvate_on_click = True
 
         elif not self.r==self.o_r:
             self.col = self.o_col
+            self.i = self.o_i
             self.r = self.o_r
             update_display = True
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        pygame.draw.rect(screen, self.b_col, self.r.inflate(1+self.b_w/self.d.x*100, 1+self.b_w/self.d.y*100))
+        if self.b_w>0:
+            if self.b_i==None:
+                pygame.draw.rect(screen, self.b_col, self.r.inflate(1+self.b_w/self.d.x*100, 1+self.b_w/self.d.y*100))
+            else:
+                screen.blit(pygame.transform.scale(self.b_i, self.r.inflate(1+self.b_w/self.d.x*100, 1+self.b_w/self.d.y*100).size), (self.r.left-(1+self.b_w/self.d.x*100)/2, self.r.top-(1+self.b_w/self.d.y*100)/2))
         #Draw button
-        pygame.draw.rect(screen, self.col, self.r)
+        if not self.i==None:
+            #If has image, draw image instead
+            screen.blit(pygame.transform.scale(self.i, self.r.size), self.r.topleft)
+        else: pygame.draw.rect(screen, self.col, self.r)
         #Draw text
         if not self.t=="":
-            screen.blit(pygame.transform.scale(self.f.render(self.t, True, self.t_col), self.r.size), self.r)
+            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
+        #print("Draw button")
+class label(menu_element):
+    def __init__(self, pos: c, align: str, dimensions : c, *, col = (200,200,200), img : pygame.Surface = None, border_width = 20, border_color = (0,0,0), border_img : pygame.Surface = None, text = "Awesome Label", font : pygame.font.Font = f1, text_col = (0,0,0)) -> None:
+        super().__init__(pos, align)
+        self.d = dimensions
+        p = self.aligned_pos(self.d)
+        self.r = pygame.Rect(p.x, display_dimensions[1]-p.y, self.d.x, self.d.y)
+
+        self.i = img
+
+        self.col = col
+
+        self.b_w = border_width
+        self.b_col = border_color
+        self.b_i = border_img
+
+
+        self.t = text
+        self.t_col = text_col
+        self.f = font
+
+    '''def update(self, mouse_pos: c, clicking: bool, key_down=None):
+        global update_display'''
+        
+    def display(self):
+        #self.r = pygame.Rect(100, 100, 400, 400)
+        #Draw border
+        if self.b_w>0:
+            if self.b_i==None:
+                pygame.draw.rect(screen, self.b_col, self.r.inflate(1+self.b_w/self.d.x*100, 1+self.b_w/self.d.y*100))
+            else:
+                screen.blit(pygame.transform.scale(self.b_i, self.r.inflate(1+self.b_w/self.d.x*100, 1+self.b_w/self.d.y*100).size), (self.r.left-(1+self.b_w/self.d.x*100)/2, self.r.top-(1+self.b_w/self.d.y*100)/2))
+        #Draw button
+        if not self.i==None:
+            #If has image, draw image instead
+            screen.blit(pygame.transform.scale(self.i, self.r.size), self.r.topleft)
+        else: pygame.draw.rect(screen, self.col, self.r)
+        #Draw text
+        if not self.t=="":
+            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
         #print("Draw button")
 
 
@@ -228,9 +377,13 @@ def main(mouse_pos : c, clicking : bool, key_down = None):
         redraw_stuff = True
 
 def mainloop():
+    global update_display
+    '''f1 = False
+    f2 = False'''
+
     bg_img = pygame.image.load("bgCropped.gif")
     init((1200, 800))
-    init_menus([menu([button(c(500, 500), "center", c(200, 140), say_hello)], bg_img=bg_img)])
+    init_menus([menu([button(c(500, 900), "center", c(200, 400), say_hello, border_img=bg_img), label(c(0, 600), "nw", c(400, 100))], bg_img=bg_img)])
 
     exit = False
     clicking = False
@@ -242,12 +395,27 @@ def mainloop():
                 exit = True
             elif event.type==pygame.KEYDOWN:
                 key_pressed = event
+                '''if event.key==pygame.K_a:
+                    f1 = True
+                if event.key==pygame.K_d:
+                    f2 = True'''
             elif event.type==pygame.KEYUP:
                 key_pressed = None
+                '''if event.key==pygame.K_a:
+                    f1 = False
+                if event.key==pygame.K_d:
+                    f2 = False'''
             elif event.type==pygame.MOUSEBUTTONDOWN:
                 clicking = True
             elif event.type==pygame.MOUSEBUTTONUP:
                 clicking = False
+
+        '''if f1:
+            menus[current_menu].menu_elements[0].r.width-=1
+            update_display = True
+        if f2:
+            menus[current_menu].menu_elements[0].r.width+=1
+            update_display = True'''
 
         main(pygame.mouse.get_pos(), clicking, key_pressed)
 

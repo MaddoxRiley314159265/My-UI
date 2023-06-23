@@ -2,12 +2,15 @@ import pygame
 from textwrap import fill
 from VectorUtil import *
 import ui_config
+from json import loads, dumps
+
 pygame.init()
 f1 = pygame.font.SysFont("Helvetica", 500)
 
 alignments = ["center", "nw", "sw", "ne", "se"]
 
-bg_img = pygame.image.load("bgCropped.gif")
+bg_img_name = "bgCropped.gif"
+bg_img = pygame.image.load(bg_img_name)
 
 #----------------------------------------------------Basic button commands-------------------------------------------
 #Basic button command to switch to next menu
@@ -33,53 +36,26 @@ def exit():
     quit()
 
 #----------------------------------------------------------Handy Functions-------------------------------------------------\
-'''
-def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect):
-    newline_index = 1
-    split_points = text.split(" ")
-    i=0
-    for word in split_points:
-        my_r = font.render(word, True, font_col)
-        w_to_h = my_r.get_rect().width/my_r.get_rect().height
-        while fit_rect.height*w_to_h>fit_rect.width:
-            #print(f"{}")
-            #Word is too long
+def save(save_file : str):
+    f = open(save_file, "a")
 
-            split_p = i+len(word)-newline_index
-            text = text[:split_p+1]+"\n"+text[split_p+1:]
-            word = word[:len(word)-newline_index+1]+"\n"+word[-newline_index:]
+    f.write("\n")
 
-            my_r = font.render(word, True, font_col)
-            print(word)
-            print(f"Width: {my_r.get_rect().width}, Height: {my_r.get_rect().height}")
-            w_to_h = my_r.get_rect().width/my_r.get_rect().height
-            newline_index+=1
+    #Save screen size
+    f.write(dumps(ui_config.display_dimensions))
+    #Save current menu
+    f.write(dumps(ui_config.current_menu_index))
+    #Save menus
 
-        i+=len(word)+1
+def obj_to_args(obj):
+    if isinstance(obj, Menu):
+        return ([obj_to_args(o) for o in obj.__menu_elements], (obj.r.left, obj.r.top, obj.r.width, obj.r.height), obj_to_args(obj.in_transition), obj_to_args(obj.out_transition), obj.get_bg_col(), obj.get_bg_img_name())
+    elif isinstance(obj, Fade_Transition):
+        return (obj.l, obj.get_fade_setting(), obj.get_col(), obj.get_fade_modifier())
+    elif isinstance(obj, Button):
+        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width())#skjfhjskdfkshfksjdhfkjshfjsjhkfdksjdhfjksdjhfs
+    
 
-    def_rect = font.render(text, True, font_col).get_rect()
-    w_to_h = def_rect.width/def_rect.height
-
-    newline_index = 2
-    while fit_rect.height*w_to_h>fit_rect.width:
-        if newline_index==len(split_points):
-            #All words have been shifted down
-            break
-
-        text = ""
-        for i, word in enumerate(split_points):
-            if i>len(split_points)-newline_index:
-                ending = "\n"
-            else: ending = " "
-
-            text+=word+ending
-
-        newline_index+=1
-        def_rect = font.render(text, True, font_col).get_rect()
-        w_to_h = def_rect.width/def_rect.height
-
-    return pygame.transform.scale(font.render(text, True, font_col), (fit_rect.height*w_to_h, fit_rect.height))
-'''
 def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect, text_height : int = None, flex_text : bool = True, display : bool = True):
     if text=="": return ""
     if flex_text: max_width_over = 200
@@ -167,8 +143,15 @@ class Fade_Transition(Transition):
         self.c-=1
         print(self.c)
 
+    def get_fade_setting(self):
+        return self.__fo
+    def get_fade_modifier(self):
+        return self.__fm
+    def get_col(self):
+        return (self.__col[0], self.__col[1], self.__col[2])
+
 class Menu:
-    def __init__(self, me : list = list(), rect : pygame.Rect = None, in_t : Transition = Fade_Transition(100, fade_modifier=2), out_t : Transition = Fade_Transition(100, False, fade_modifier=2), *, bg_col : pygame.Color = pygame.Color("white"), bg_img : pygame.Surface = None) -> None:
+    def __init__(self, me : list = list(), rect : pygame.Rect = None, in_t : Transition = Fade_Transition(100, fade_modifier=2), out_t : Transition = Fade_Transition(100, False, fade_modifier=2), *, bg_col : pygame.Color = pygame.Color("white"), bg_img : pygame.Surface = None, bg_img_name : str = None) -> None:
         if rect==None: rect = ui_config.screen.get_rect()
         self.r = rect
         self.__s = pygame.Surface(self.r.size)
@@ -182,6 +165,11 @@ class Menu:
 
         self.__bg_col = bg_col
         self.__bg_img = bg_img
+        self.__bg_img_n = bg_img_name
+        if self.__bg_img==None and not self.__bg_img_n==None:
+            self.__bg_img = pygame.image.load(self.__bg_img_n)
+        elif self.__bg_img_n==None and not self.__bg_img==None:
+            raise Exception("Error, must provide image file name when providing image")
 
         #self.draw_menu()
 
@@ -218,6 +206,11 @@ class Menu:
             e.display()
         update_display = False
 
+    def get_bg_col(self):
+        return (self.__bg_col[0], self.__bg_col[1], self.__bg_col[2])
+    def get_bg_img_name(self):
+        return self.__bg_img_n
+
 
 
 #------------------------------------------------------------------Menu Elements------------------------------------------------------------------
@@ -243,17 +236,43 @@ class Menu_Element:
         pass #Update appearence
     def display(self):
         pass #Display
+    def get_pos(self):
+        return self.__p
+    def get_alignment(self):
+        return self.__a
 class Button(Menu_Element):
-    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), img : pygame.Surface = None, highlight_col = (240,240,240), highlight_img : pygame.Surface = None, border_width = 20, border_color = (0,0,0), border_img : pygame.Surface = None, text = "Buttonkjsdfhksjdfh", font : pygame.font.Font = f1, text_col = (0,0,0), inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
+    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), 
+                 
+                 img_name : str = None, highlight_col = (240,240,240), highlight_img_name : str = None, 
+                 
+                 border_width = 20, border_color = (0,0,0), border_img_name : str = None, 
+                 
+                 text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0), 
+                 
+                 inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
+        
         super().__init__(pos, align)
         self.__d = dimensions
         p = self.aligned_pos(self.__d)
         self.__o_r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
         self.__r = self.__o_r
 
-        self.__o_i = img
+        self.__i_n = img_name
+        self.__o_i = None
+        if not self.__i_n==None:
+            try:
+                self.__o_i = pygame.image.load(self.__i_n)
+            except:
+                print(f"ERROR: could not load image '{img_name}")
+
         self.__i = self.__o_i
-        self.__h_i = highlight_img
+        self.__h_i_n = highlight_img_name
+        self.__h_i = None
+        if not self.__h_i_n==None:
+            try:
+                self.__h_i = pygame.image.load(self.__h_i_n)
+            except:
+                print(f"ERROR: could not load image '{highlight_img_name}")
 
         self.__o_col = col
         self.__col = self.__o_col
@@ -261,12 +280,28 @@ class Button(Menu_Element):
 
         self.__b_w = border_width
         self.__b_col = border_color
-        self.__b_i = border_img
+        self.__b_i_n = border_img_name
+        self.__b_i = None
+        if not self.__b_i_n==None:
+            try:
+                self.__b_i = pygame.image.load(self.__b_i_n)
+            except:
+                print(f"ERROR: could not load image '{border_img_name}")
 
 
         self.__t = text
         self.__t_col = text_col
-        self.__f = font
+        self.__f_n = font_name
+        self.__f = None
+        if not text=="":
+            try:
+                self.__f = pygame.font.Font(self.__f_n)
+            except:
+                try:
+                    self.__f = pygame.font.SysFont(self.__f_n)
+                except:
+                    print(f"ERROR: could not find font '{self.__f_n}")
+
         self.__func = action
 
 
@@ -321,6 +356,34 @@ class Button(Menu_Element):
         if not self.__t=="":
             fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
         #print("Draw button")
+    def get_dimensions(self):
+        return self.__d
+    def get_action(self):
+        return self.__func
+    def get_col(self):
+        return (self.__col[0], self.__col[1], self.__col[2])
+    def get_highlight_col(self):
+        return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
+    def get_border_col(self):
+        return (self.__b_col[0], self.__b_col[1], self.__b_col[2])
+    def get_img_name(self):
+        return self.__i_n
+    def get_highlight_img_name(self):
+        return self.__h_i_n
+    def get_border_img_name(self):
+        return self.__b_i_n
+    def get_border_width(self):
+        return self.__b_w
+    def get_text(self):
+        return self.__t
+    def get_font(self):
+        return self.__f_n
+    def get_text_col(self):
+        return (self.__t_col[0], self.__t_col[1], self.__t_col[2])
+    def get_highlight_inflation(self):
+        return self.__i_h
+    def get_click_inflation(self):
+        return self.__i_c
 class Label(Menu_Element):
     def __init__(self, pos: c, align: str, dimensions : c, *, col = (200,200,200), img : pygame.Surface = None, border_width = 20, border_color = (0,0,0), border_img : pygame.Surface = None, text = "Awesome Label", font : pygame.font.Font = f1, text_col = (0,0,0)) -> None:
         super().__init__(pos, align)

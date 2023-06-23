@@ -1,6 +1,7 @@
 import pygame
 from textwrap import fill
 from VectorUtil import *
+from VectorUtil import c
 import ui_config
 from json import loads, dumps
 
@@ -53,7 +54,9 @@ def obj_to_args(obj):
     elif isinstance(obj, Fade_Transition):
         return (obj.l, obj.get_fade_setting(), obj.get_col(), obj.get_fade_modifier())
     elif isinstance(obj, Button):
-        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width())#skjfhjskdfkshfksjdhfkjshfjsjhkfdksjdhfjksdjhfs
+        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_highlight_inflation(), obj.get_click_inflation(), obj.get_multiple_calls())
+    elif isinstance(obj, Label):
+        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), )
     
 
 def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect, text_height : int = None, flex_text : bool = True, display : bool = True):
@@ -240,6 +243,44 @@ class Menu_Element:
         return self.__p
     def get_alignment(self):
         return self.__a
+class Text_Element(Menu_Element):
+    def __init__(self, pos: c, align: str, dimensions : c, text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
+        super().__init__(pos, align)
+        self.__d = dimensions
+        p = self.aligned_pos(self.__d)
+        self.__r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
+
+        self.__t = text
+        self.__t_col = text_col
+        self.__f_n = font_name
+        self.__f = None
+        if not text=="":
+            try:
+                self.__f = pygame.font.Font(self.__f_n)
+            except:
+                try:
+                    self.__f = pygame.font.SysFont(self.__f_n)
+                except:
+                    print(f"ERROR: could not find font '{self.__f_n}")
+class Text_Box_Element(Text_Element):
+    def __init__(self, pos: c, align: str, dimensions: c, 
+                 
+                 text: str = "Press Me", font_name: str = "Helvetica", text_col=(0, 0, 0),
+                 
+                 col = (200,200,200), img_name : str = None,
+                 
+                 border_width = 20, border_color = (0,0,0), border_img_name : str = None) -> None:
+        super().__init__(pos, align, dimensions, text, font_name, text_col)
+        self.__col = col
+        self.__b_w = border_width
+        self.__b_col = border_color
+        self.__b_i_n = border_img_name
+        self.__b_i = None
+        if not self.__b_i_n==None:
+            try:
+                self.__b_i = pygame.image.load(self.__b_i_n)
+            except:
+                print(f"ERROR: could not load image '{border_img_name}")
 class Button(Menu_Element):
     def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), 
                  
@@ -252,10 +293,7 @@ class Button(Menu_Element):
                  inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
         
         super().__init__(pos, align)
-        self.__d = dimensions
-        p = self.aligned_pos(self.__d)
-        self.__o_r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
-        self.__r = self.__o_r
+        self.__o_r = self.__r
 
         self.__i_n = img_name
         self.__o_i = None
@@ -274,33 +312,8 @@ class Button(Menu_Element):
             except:
                 print(f"ERROR: could not load image '{highlight_img_name}")
 
-        self.__o_col = col
-        self.__col = self.__o_col
+        self.__o_col = self.__o_col
         self.__h_col = highlight_col
-
-        self.__b_w = border_width
-        self.__b_col = border_color
-        self.__b_i_n = border_img_name
-        self.__b_i = None
-        if not self.__b_i_n==None:
-            try:
-                self.__b_i = pygame.image.load(self.__b_i_n)
-            except:
-                print(f"ERROR: could not load image '{border_img_name}")
-
-
-        self.__t = text
-        self.__t_col = text_col
-        self.__f_n = font_name
-        self.__f = None
-        if not text=="":
-            try:
-                self.__f = pygame.font.Font(self.__f_n)
-            except:
-                try:
-                    self.__f = pygame.font.SysFont(self.__f_n)
-                except:
-                    print(f"ERROR: could not find font '{self.__f_n}")
 
         self.__func = action
 
@@ -384,28 +397,51 @@ class Button(Menu_Element):
         return self.__i_h
     def get_click_inflation(self):
         return self.__i_c
+    def get_multiple_calls(self):
+        return self.__m_c
 class Label(Menu_Element):
-    def __init__(self, pos: c, align: str, dimensions : c, *, col = (200,200,200), img : pygame.Surface = None, border_width = 20, border_color = (0,0,0), border_img : pygame.Surface = None, text = "Awesome Label", font : pygame.font.Font = f1, text_col = (0,0,0)) -> None:
+    def __init__(self, pos: c, align: str, dimensions : c, *, col = (200,200,200), img_name : str = None, border_width = 20, border_color = (0,0,0), border_img_name : str = None, text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
         super().__init__(pos, align)
         self.__d = dimensions
         p = self.aligned_pos(self.__d)
         self.__r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
 
-        self.__i = img
+        self.__i_n = img_name
+        self.__i = None
+        if not self.__i_n==None:
+            try:
+                self.__i = pygame.image.load(self.__i_n)
+            except:
+                print(f"ERROR: could not load image '{img_name}")
 
         self.__col = col
 
         self.__b_w = border_width
         self.__b_col = border_color
-        self.__b_i = border_img
+        self.__b_i_n = border_img_name
+        self.__b_i = None
+        if not self.__b_i_n==None:
+            try:
+                self.__b_i = pygame.image.load(self.__b_i_n)
+            except:
+                print(f"ERROR: could not load image '{border_img_name}")
 
 
         self.__t = text
         self.__t_col = text_col
-        self.__f = font
+        self.__f_n = font_name
+        self.__f = None
+        if not text=="":
+            try:
+                self.__f = pygame.font.Font(self.__f_n)
+            except:
+                try:
+                    self.__f = pygame.font.SysFont(self.__f_n)
+                except:
+                    print(f"ERROR: could not find font '{self.__f_n}")
 
     '''def update(self, mouse_pos: c, clicking: bool, key_event=None):
-        global update_display'''
+        '''
         
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
@@ -424,6 +460,24 @@ class Label(Menu_Element):
         if not self.__t=="":
             fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
         #print("Draw label")
+    def get_dimensions(self):
+        return self.__d
+    def get_col(self):
+        return (self.__col[0], self.__col[1], self.__col[2])
+    def get_border_col(self):
+        return (self.__b_col[0], self.__b_col[1], self.__b_col[2])
+    def get_img_name(self):
+        return self.__i_n
+    def get_border_img_name(self):
+        return self.__b_i_n
+    def get_border_width(self):
+        return self.__b_w
+    def get_text(self):
+        return self.__t
+    def get_font(self):
+        return self.__f_n
+    def get_text_col(self):
+        return (self.__t_col[0], self.__t_col[1], self.__t_col[2])
 class Text(Menu_Element):
     def __init__(self, pos: c, align: str, height : int, text = "Awesome Label", text_col = (0,0,0), font : pygame.font.Font = f1, highlight_col = (240,240,240)) -> None:
         super().__init__(pos, align)

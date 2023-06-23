@@ -14,15 +14,15 @@ bg_img = pygame.image.load("bgCropped.gif")
 def next_menu():
     ui_config.next_menu_index = ui_config.current_menu_index+1
 
-    if next_menu_index>=len(ui_config.menus):
-        next_menu_index = 0
+    if ui_config.next_menu_index>=len(ui_config.menus):
+        ui_config.next_menu_index = 0
 
     ui_config.menus[ui_config.current_menu_index].switching_out = True
 def prev_menu():
-    next_menu_index = ui_config.current_menu_index-1
+    ui_config.next_menu_index = ui_config.current_menu_index-1
 
-    if next_menu_index<0:
-        next_menu_index = len(ui_config.menus)-1
+    if ui_config.next_menu_index<0:
+        ui_config.next_menu_index = len(ui_config.menus)-1
     ui_config.menus[ui_config.current_menu_index].switching_out = True
 
 def say_hello():
@@ -122,7 +122,7 @@ def render_paragraph(text : str, font_col, font : pygame.font.Font, target_rect 
         if height==None: height = target_rect.height
         w = line_width(line, font_col, font, height)
         if w>target_rect.width and flex_text: w = target_rect.width
-        screen.blit(pygame.transform.scale(font.render(line, True, font_col), (w,height)), (target_rect.left, target_rect.top+i*height))
+        ui_config.screen.blit(pygame.transform.scale(font.render(line, True, font_col), (w,height)), (target_rect.left, target_rect.top+i*height))
 
 #-------------------------------------------------------Menu and Transitions---------------------------------------------------------------
 
@@ -356,7 +356,7 @@ class Label(Menu_Element):
         if not self.__i==None:
             #If has image, draw image instead
             ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)
-        else: pygame.draw.rect(screen, self.__col, self.__r)
+        else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
         if not self.__t=="":
             fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
@@ -480,7 +480,7 @@ class Entry(Menu_Element):
         if not self.__i==None:
             #If has image, draw image instead
             ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)
-        else: pygame.draw.rect(screen, self.__col, self.__r)
+        else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
         if not self.__t=="":
             if self.__ct:

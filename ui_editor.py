@@ -21,6 +21,7 @@ def save():
     #Save current menu
     f.write(dumps(ui_config.current_menu_index))
     #Save menus
+    
 
 while not ui_config.exit_loop:
     main()

@@ -2,7 +2,7 @@ from my_ui import *
 import ui_config
 import pygame
 
-save_file = "ui.json"
+save_file = "ui_saves.json"
 
 pygame.init()
 
@@ -12,5 +12,9 @@ ui_config.menus.extend([Menu([Button(c(500, 700), "center", c(200, 400), next_me
             Menu([Label(c(200, 200), "nw", c(200, 100), text="Welcome to menu 2"), Button(c(500, 500), "center", c(300, 100), prev_menu, text="If we could turn back time")], bg_col=(200, 200, 100))])
     
 
+
+
 while not ui_config.exit_loop:
     main()
+
+save(save_file)

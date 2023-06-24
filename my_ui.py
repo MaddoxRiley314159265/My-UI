@@ -35,44 +35,53 @@ def say_hello():
 def exit():
     pygame.quit()
     quit()
+button_funcs = [next_menu, prev_menu, say_hello, exit]
 
 #----------------------------------------------------------Handy Functions-------------------------------------------------\
 def save(save_file : str):
     f = open(save_file, "a")
 
-    f.write("\n")
-
     #Save file format version
-    f.write(dumps(0))
+    f.write(dumps(0)+" ")
 
     #Save screen size
-    f.write(dumps(ui_config.display_dimensions))
+    f.write(dumps(ui_config.display_dimensions)+" ")
     #Save current menu
-    f.write(dumps(ui_config.current_menu_index))
+    f.write(dumps(ui_config.current_menu_index)+" ")
     #Save menus
-    f.write([obj_to_args(m) for m in ui_config.menus])
+    f.write(dumps([obj_to_args(m) for m in ui_config.menus])+" ")
+
+    f.write("\n")
 
     f.close()
 
 def load(save_file : str, index : int):
     f = open(save_file, "r")
 
-    all_saves = f.read().split("\n\n")
+    all_saves = f.read().split("\n")
+
+    try:
+        this_save = all_saves[index]
+    except:
+        print(f"Invalid save menu index '{index}'")
+        return
+
+    save_contents = this_save.split(" ")
 
 
 def obj_to_args(obj):
     if isinstance(obj, Menu):
-        return ([obj_to_args(o) for o in obj.__menu_elements], (obj.r.left, obj.r.top, obj.r.width, obj.r.height), obj_to_args(obj.in_transition), obj_to_args(obj.out_transition), obj.get_bg_col(), obj.get_bg_img_name())
+        return 0, ([obj_to_args(o) for o in obj.menu_elements], (obj.r.left, obj.r.top, obj.r.width, obj.r.height), obj_to_args(obj.in_transition), obj_to_args(obj.out_transition), obj.get_bg_col(), obj.get_bg_img_name())
     elif isinstance(obj, Fade_Transition):
-        return (obj.l, obj.get_fade_setting(), obj.get_col(), obj.get_fade_modifier())
+        return 1, (obj.l, obj.get_fade_setting(), obj.get_col(), obj.get_fade_modifier())
     elif isinstance(obj, Button):
-        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_highlight_inflation(), obj.get_click_inflation(), obj.get_multiple_calls())
+        return 2, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_highlight_inflation(), obj.get_click_inflation(), obj.get_multiple_calls())
     elif isinstance(obj, Label):
-        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col())
+        return 3, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col())
     elif isinstance(obj, Text):
-        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_height(), obj.get_text(), obj.get_text_col(), obj.get_font(), obj.get_highlight_col())
+        return 4, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_height(), obj.get_text(), obj.get_text_col(), obj.get_font(), obj.get_highlight_col())
     elif isinstance(obj, Entry):
-        return (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_height(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_if_clamp())
+        return 5, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_height(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_if_clamp())
     
 def font_name_to_font(font_name : str):
     try:
@@ -186,7 +195,7 @@ class Menu:
         self.r = rect
         self.__s = pygame.Surface(self.r.size)
 
-        self.__menu_elements = me
+        self.menu_elements = me
         self.in_transition = in_t
         self.out_transition = out_t
 
@@ -215,7 +224,7 @@ class Menu:
             if self.in_transition.c>=0: 
                 self.display()
                 self.in_transition.update(self.r)
-            for e in self.__menu_elements:
+            for e in self.menu_elements:
                 e.update(mouse_pos, clicking, key_event)
 
     def draw_menu(self):
@@ -232,7 +241,7 @@ class Menu:
         global update_display
         #Erase elements by drawing menu again, then display each element
         self.draw_menu()
-        for e in self.__menu_elements:
+        for e in self.menu_elements:
             e.display()
         update_display = False
 
@@ -267,7 +276,7 @@ class Menu_Element:
     def display(self):
         pass #Display
     def get_pos(self):
-        return self.__p
+        return self.__p.t()
     def get_alignment(self):
         return self.__a
 class Text_Element(Menu_Element):
@@ -282,7 +291,7 @@ class Text_Element(Menu_Element):
         self.__f_n = font_name
         self.__f = font_name_to_font(self.__f_n)
     def get_dimensions(self):
-        return self.__d
+        return self.__d.t()
     def get_text(self):
         return self.__t
     def get_font(self):
@@ -328,7 +337,7 @@ class Text_Box_Element(Text_Element):
     def get_border_width(self):
         return self.__b_w
 class Button(Text_Box_Element):
-    def __init__(self, pos: c, align: str, dimensions : c, action, *, col = (200,200,200), 
+    def __init__(self, pos: c, align: str, dimensions : c, action_index, *, col = (200,200,200), 
                  
                  img_name : str = None, highlight_col = (240,240,240), highlight_img_name : str = None, 
                  
@@ -368,7 +377,7 @@ class Button(Text_Box_Element):
         self.__o_col = self.__col
         self.__h_col = highlight_col
 
-        self.__func = action
+        self.__func_i = action_index
 
 
         self.__i_h = inflate_on_hightlight
@@ -392,7 +401,7 @@ class Button(Text_Box_Element):
                 if not self.__r==self.__o_r.inflate(self.__i_c, self.__i_c):
                     self.__r = self.__o_r.inflate(self.__i_c, self.__i_c)
                     update_display = True
-                self.__func()
+                button_funcs[self.__func_i]()
                 #Only activate once
                 if not self.__m_c:
                     self.acitvate_on_click = False

@@ -86,7 +86,7 @@ def font_name_to_font(font_name : str):
     return f
     
 
-def fit_text_to_rect(text : str, font_col, font_name : str, fit_rect : pygame.Rect, text_height : int = None, flex_text : bool = True, display : bool = True):
+def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect, text_height : int = None, flex_text : bool = True, display : bool = True):
     if text=="": return ""
     if flex_text: max_width_over = 200
     else: max_width_over = 0
@@ -97,7 +97,7 @@ def fit_text_to_rect(text : str, font_col, font_name : str, fit_rect : pygame.Re
         t_h = text_height
 
     formatted_text = text
-    while paragraph_dim(formatted_text, font_col, font_name, t_h, flex_text)[0]-fit_rect.width>max_width_over:
+    while paragraph_dim(formatted_text, font_col, font, t_h, flex_text)[0]-fit_rect.width>max_width_over:
         if wrap<=0:
             break
         formatted_text = fill(text, wrap)
@@ -107,15 +107,14 @@ def fit_text_to_rect(text : str, font_col, font_name : str, fit_rect : pygame.Re
     if wrap<0:
         print("ERROR: could not wrap text:", text)
         return
-    if display: return render_paragraph(formatted_text, font_col, font_name, fit_rect, t_h, flex_text)
+    if display: return render_paragraph(formatted_text, font_col, font, fit_rect, t_h, flex_text)
     else: return formatted_text
 def line_width(text : str, font_col, font : str, height):
     w, h = font.render(text, True, font_col).get_rect().size
     w_to_h = w/h
 
     return height*w_to_h
-def paragraph_dim(text : str, font_col, font_name : str, height, flex_text : bool = True):
-    font = font_name_to_font(font_name)
+def paragraph_dim(text : str, font_col, font : pygame.font.Font, height, flex_text : bool = True):
     width = 0
     if flex_text: height = height/(1+text.count("\n"))
     for line in text.split("\n"):
@@ -123,8 +122,7 @@ def paragraph_dim(text : str, font_col, font_name : str, height, flex_text : boo
 
         if w>width: width = w
     return width, height*(1+text.count("\n"))
-def render_paragraph(text : str, font_col, font_name : str, target_rect : pygame.Rect, height : int = None, flex_text : bool = True):
-    font = font_name_to_font(font_name)
+def render_paragraph(text : str, font_col, font : pygame.font.Font, target_rect : pygame.Rect, height : int = None, flex_text : bool = True):
     if flex_text: height = height/(1+text.count("\n"))
     for i, line in enumerate(text.split("\n")):
         if height==None: height = target_rect.height
@@ -276,17 +274,15 @@ class Text_Element(Menu_Element):
     def __init__(self, pos: c, align: str, dimensions : c, text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
         super().__init__(pos, align)
         self.__d = dimensions
-        p = self.aligned_pos(self._Text_Element__d)
-        self.__r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self._Text_Element__d.x, self._Text_Element__d.y)
+        p = self.aligned_pos(self.__d)
+        self.__r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
 
         self.__t = text
         self.__t_col = text_col
         self.__f_n = font_name
-        self.__f = None
-        if not text=="":
-            self.__f = font_name_to_font(self.__f_n)
+        self.__f = font_name_to_font(self.__f_n)
     def get_dimensions(self):
-        return self._Text_Element__d
+        return self.__d
     def get_text(self):
         return self.__t
     def get_font(self):
@@ -348,12 +344,12 @@ class Button(Text_Box_Element):
 
         self.__d = self._Text_Element__d
         self.__t = self._Text_Element__t
-        self.__f_n = self._Text_Element__f_n
+        self.__f = self._Text_Element__f
         self.__t_col = self._Text_Element__t_col
         self.__col = self._Text_Box_Element__col
         self.__i = self._Text_Box_Element__i
         self.__b_w = self._Text_Box_Element__b_w
-        self.b_col = self._Text_Box_Element__b_col
+        self.__b_col = self._Text_Box_Element__b_col
         self.__b_i = self._Text_Box_Element__b_i
 
 
@@ -412,7 +408,7 @@ class Button(Text_Box_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        if self.t__b_w>0:
+        if self.__b_w>0:
             if self.__b_i==None:
                 pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100))
             else:
@@ -424,7 +420,7 @@ class Button(Text_Box_Element):
         else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
         if not self.__t=="":
-            fit_text_to_rect(self.__t, self.__t_col, self.__f_n, self.__r), self.__r.topleft
+            fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
         #print("Draw button")
     def get_action(self):
         return self.__func
@@ -453,12 +449,12 @@ class Label(Text_Box_Element):
 
         self.__d = self._Text_Element__d
         self.__t = self._Text_Element__t
-        self.__f_n = self._Text_Element__f_n
+        self.__f = self._Text_Element__f
         self.__t_col = self._Text_Element__t_col
         self.__col = self._Text_Box_Element__col
         self.__i = self._Text_Box_Element__i
         self.__b_w = self._Text_Box_Element__b_w
-        self.b_col = self._Text_Box_Element__b_col
+        self.__b_col = self._Text_Box_Element__b_col
         self.__b_i = self._Text_Box_Element__b_i
 
     '''def update(self, mouse_pos: c, clicking: bool, key_event=None):
@@ -488,15 +484,17 @@ class Text(Text_Element):
                  
                  highlight_col = (240,240,240)) -> None:
         super().__init__(pos, align, c(0,0), text, font_name, text_col)
-        #kjdfghdlkjfgjkldfgjlkdfljgldkjfglkdfjglkjdfglkjdfkljgoieu5096tu4yihgolkfdhjnikolehfdyt89g4ey0hjuorlkhjfglkhjlkfghj
-        #kljhdfhgoihgfiohgf
+        
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
+        self.__col = self._Text_Element__t_col
+        self.__h_col = highlight_col
+        self.__o_col = self.__col
 
-        w, h = paragraph_dim(text, text_col, font_name, height)
+        w, h = paragraph_dim(text, text_col, self.__f, height)
         self.__p = self.aligned_pos(c(w/h*height, height))
         self.__r = pygame.Rect(self.__p.x, ui_config.display_dimensions[1]-self.__p.y, w/h*height, height)
 
-        self.__h_col = highlight_col
-        self.__o_col = self._Text_Element__t_col
 
     def update(self, mouse_pos: c, clicking: bool, key_event=None):
         global update_display
@@ -510,8 +508,8 @@ class Text(Text_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw Text
-        if not self._Text_Box_Element__t=="":
-            ui_config.screen.blit(self.__f.render(self._Text_Box_Element__t, True, self.__col), self.__r.topleft)
+        if not self.__t=="":
+            ui_config.screen.blit(pygame.transform.scale(self.__f.render(self.__t, True, self.__col), self.__r.size), self.__r.topleft)
         #print("Draw text")
     def get_height(self):
         return self.__r.height
@@ -528,10 +526,17 @@ class Entry(Text_Box_Element):
                  
                  text = "", font_name : str = "Helvetica", text_col = (0,0,0), clamp_text : bool = True) -> None:
         super().__init__(pos, align, dimensions, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+        self.__d = self._Text_Element__d
+        self.__r = self._Text_Element__r
+
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
         self.__t_r = None
         self.__t_h = text_height
+        self.__t_col = self._Text_Element__t_col
 
-        self.__o_i = self._Text_Box_Element__i
+        self.__i = self._Text_Box_Element__i
+        self.__o_i = self.__i
         self.__h_i_n = highlight_img_name
         self.__h_i = None
         if not self.__h_i_n==None:
@@ -540,8 +545,13 @@ class Entry(Text_Box_Element):
             except:
                 print(f"ERROR: could not load image '{highlight_img_name}")
 
-        self.__o_col = self._Text_Box_Element__col
+        self.__col = self._Text_Box_Element__col
+        self.__o_col = self.__col
         self.__h_col = highlight_col
+
+        self.__b_w = self._Text_Box_Element__b_w
+        self.__b_col = self._Text_Box_Element__b_col
+        self.__b_i = self._Text_Box_Element__b_i
 
         self.__selected = False
 
@@ -599,12 +609,12 @@ class Entry(Text_Box_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        if self._Text_Box_Element__b_w>0:
-            if self._Text_Box_Element__b_i==None:
-                pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self._Text_Box_Element__b_w/self._Text_Element__d.x*100, 1+self._Text_Box_Element__b_w/self._Text_Element__d.y*100))
+        if self.__b_w>0:
+            if self.__b_i==None:
+                pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100))
             else:
-                ui_config.screen.blit(pygame.transform.scale(self._Text_Box_Element__b_i, self.__r.inflate(1+self._Text_Box_Element__b_w/self._Text_Element__d.x*100, 1+self._Text_Box_Element__b_w/self._Text_Element__d.y*100).size), (self.__r.left-(1+self._Text_Box_Element__b_w/self._Text_Element__d.x*100)/2, self.__r.top-(1+self._Text_Box_Element__b_w/self._Text_Element__d.y*100)/2))
-        #Draw button
+                ui_config.screen.blit(pygame.transform.scale(self.__b_i, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100).size), (self.__r.left-(1+self.__b_w/self.__d.x*100)/2, self.__r.top-(1+self.__b_w/self.__d.y*100)/2))
+        #Draw middle
         if not self.__i==None:
             #If has image, draw image instead
             ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)

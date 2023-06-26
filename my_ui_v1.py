@@ -35,10 +35,10 @@ def say_hello():
 def exit():
     pygame.quit()
     quit()
-button_funcs = {"next_menu" : next_menu, "prev_menu" : prev_menu, "say_hello" : say_hello, "exit" : exit}
+button_funcs = [next_menu, prev_menu, say_hello, exit]
 
 #----------------------------------------------------------Handy Functions-------------------------------------------------\
-file_version = 1
+file_version = 0
 def save(save_file : str):
     r_f = open(save_file, "r")
 
@@ -57,7 +57,7 @@ def save(save_file : str):
     "file_version" : file_version,
 
     #Save screen size
-    "screen_size" : ui_config.display_dimensions,
+    "screen_size" : ui_config.display_dimensions.t(),
     #Save current menu
     "open_menu" : ui_config.current_menu_index,
     #Save menus
@@ -94,42 +94,39 @@ def load(save_file : str, save_name : str):
     #Menus
     for mi in range(len(my_menus)):
         #Menu
-        my_elements = [None]*len(my_menus[mi]["elements"])
-        for me_i, me in enumerate(my_menus[mi]["elements"]):
+        my_elements = [None]*len(my_menus[mi][0])
+        for me_i, me in enumerate(my_menus[mi][0]):
             my_element_index = me[0]
             if my_element_index<1 or my_element_index>=len(classes):
                 print(f"ERROR: no class type given at menu {mi} element {my_element_index}")
             else:
-                my_elements[me_i] = classes[my_element_index](*list(me[1].values()))
+                my_elements[me_i] = classes[my_element_index](*me[1])
                 
-        ui_config.menus[mi] = Menu(my_elements, my_menus[mi][1], classes[my_menus[mi][2][0]](*list(my_menus[mi][2][1].values())), classes[my_menus[mi][3][0]](*list(my_menus[mi][3][1].values())), *list(my_menus[mi][4:].values()))
+        ui_config.menus[mi] = Menu(my_elements, my_menus[mi][1], classes[my_menus[mi][2][0]](*my_menus[mi][2][1]), classes[my_menus[mi][3][0]](*my_menus[mi][3][1]), *my_menus[mi][4:])
 
             
 
 
 
-def obj_to_dict(obj):
-    if isinstance(obj, classes["Menu"]):
+def obj_to_args(obj):
+    if isinstance(obj, classes[0]):
         #Menu contructor arguments
-        my_element_dict = {}
-        for e in obj.menu_elements:
-            my_element_dict.update(obj_to_dict(e))
-        return {"elements" : my_element_dict, "rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "in_transition" : obj_to_args(obj.in_transition), "out_transition" : obj_to_args(obj.out_transition), "bg_color" : obj.get_bg_col(), "bg_image_name" : obj.get_bg_img_name()}
-    elif isinstance(obj, classes["Fade_Transition"]):
+        return ([obj_to_args(o) for o in obj.menu_elements], (obj.r.left, obj.r.top, obj.r.width, obj.r.height), obj_to_args(obj.in_transition), obj_to_args(obj.out_transition), obj.get_bg_col(), obj.get_bg_img_name())
+    elif isinstance(obj, classes[1]):
         #Fade transition contructor arguments
-        return {"Fade_Transition" :  {"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : obj.get_col(), "fade_modifier" : obj.get_fade_modifier()}}
-    elif isinstance(obj, classes["Button"]):
+        return 1, (obj.l, obj.get_fade_setting(), obj.get_col(), obj.get_fade_modifier())
+    elif isinstance(obj, classes[2]):
         #Button contructor arguments
-        return {"Button" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "action_name" : obj.get_action_n(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}}
-    elif isinstance(obj, classes["Label"]):
+        return 2, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_action_i(), obj.get_col(), obj.get_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_highlight_inflation(), obj.get_click_inflation(), obj.get_multiple_calls())
+    elif isinstance(obj, classes[3]):
         #Label contructor arguments
-        return {"Label" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col()}}
-    elif isinstance(obj, classes["Text"]):
+        return 3, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col())
+    elif isinstance(obj, classes[4]):
         #Text contructor arguments
-        return {"Text" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "text_height" : obj.get_height(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "highlight_col" : obj.get_highlight_col()}}
-    elif isinstance(obj, classes["Entry"]):
+        return 4, (obj.get_pos(), obj.get_alignment(), obj.get_height(), obj.get_text(), obj.get_text_col(), obj.get_font(), obj.get_highlight_col())
+    elif isinstance(obj, classes[5]):
         #Entry contructor arguments
-        return {"Entry" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "text_height" : obj.get_height(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "clamp_text" : obj.get_if_clamp()}}
+        return 5, (obj.get_pos(), obj.get_alignment(), obj.get_dimensions(), obj.get_height(), obj.get_col(), obj.get_img_name(), obj.get_border_width(), obj.get_border_col(), obj.get_border_img_name(), obj.get_highlight_col(), obj.get_highlight_img_name(), obj.get_text(), obj.get_font(), obj.get_text_col(), obj.get_if_clamp())
     
 def font_name_to_font(font_name : str):
     try:
@@ -389,7 +386,7 @@ class Text_Box_Element(Text_Element):
     def get_border_width(self):
         return self.__b_w
 class Button(Text_Box_Element):
-    def __init__(self, pos: c, align: str, dimensions : c, action_name : str, #*, 
+    def __init__(self, pos: c, align: str, dimensions : c, action_index, #*, 
                  col = (200,200,200), 
                  
                  img_name : str = None, highlight_col = (240,240,240), highlight_img_name : str = None, 
@@ -430,7 +427,7 @@ class Button(Text_Box_Element):
         self.__o_col = self.__col
         self.__h_col = highlight_col
 
-        self.__func_n = action_name
+        self.__func_i = action_index
 
 
         self.__i_h = inflate_on_hightlight
@@ -486,8 +483,8 @@ class Button(Text_Box_Element):
         #print("Draw button")
     def get_action(self):
         return button_funcs[self.__func_i]
-    def get_action_n(self):
-        return self.__func_n
+    def get_action_i(self):
+        return self.__func_i
     def get_highlight_col(self):
         return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
     def get_highlight_img_name(self):
@@ -698,7 +695,7 @@ class Entry(Text_Box_Element):
     def get_if_clamp(self):
         return self.__ct
     
-classes = {"Menu" : Menu, "Fade_Transition" : Fade_Transition, "Button" : Button, "Label" : Label, "Text" : Text, "Entry" : Entry}
+classes = [Menu, Fade_Transition, Button, Label, Text, Entry]
 
 
 #--------------------------------------------------------------------------------------Put it together-----------------------------------------------------------------------

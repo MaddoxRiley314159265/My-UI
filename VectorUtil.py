@@ -1,5 +1,5 @@
 class c:
-    def __init__(self, x, y) -> None:
+    def __init__(self, x, y = None) -> None:
         try:
             self.x = x[0]
             self.y = x[1]

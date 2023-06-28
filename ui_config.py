@@ -17,3 +17,5 @@ redraw_stuff = True
 exit_loop = False
 clicking = False
 key_pressed = None
+
+select_rect_col = pygame.Color("red")

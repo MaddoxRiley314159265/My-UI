@@ -58,3 +58,7 @@ def font_name_to_font(font_name : str):
             print(f"ERROR: could not find font '{font_name}'")
             f = None
     return f
+
+#Color to tuple
+def c_t(color : pygame.Color | tuple):
+    return (color[0], color[1], color[2])

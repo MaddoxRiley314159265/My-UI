@@ -112,37 +112,27 @@ def load(save_file : str, save_name : str):
 
             
 
-def bad(l):
-    for i in list(l.values()):
-        if isinstance(i, c):
-            return True
-    return False
+
 
 def serialize(obj):
     if isinstance(obj, classes["Menu"]):
         #Menu contructor arguments
-        if bad({"elements" : [serialize(e) for e in obj.menu_elements], "rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "in_transition" : serialize(obj.in_transition), "out_transition" : serialize(obj.out_transition), "bg_color" : obj.get_bg_col(), "bg_image_name" : obj.get_bg_img_name()}): print("Uh oh menu")
         return {"elements" : [serialize(e) for e in obj.menu_elements], "rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "in_transition" : serialize(obj.in_transition), "out_transition" : serialize(obj.out_transition), "bg_color" : obj.get_bg_col(), "bg_image_name" : obj.get_bg_img_name()}
     elif isinstance(obj, classes["Fade_Transition"]):
         #Fade transition contructor arguments
-        if bad({"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : c_t(obj.col), "fade_modifier" : obj.get_fade_modifier()}): print("Uh oh transition")
-        return {"Fade_Transition" :  {"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : c_t(obj.col), "fade_modifier" : obj.get_fade_modifier()}}
+        return {"Fade_Transition" :  {"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : obj.get_col(), "fade_modifier" : obj.get_fade_modifier()}}
     elif isinstance(obj, classes["Button"]):
         #Button contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}): print("Uh oh button")
-        return {"Button" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}}
+        return {"Button" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "action_name" : obj.get_action_n(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}}
     elif isinstance(obj, classes["Label"]):
         #Label contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col}): print("Uh oh label")
-        return {"Label" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col}}
+        return {"Label" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col()}}
     elif isinstance(obj, classes["Text"]):
         #Text contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col()}): print("Uh oh text")
-        return {"Text" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col()}}
+        return {"Text" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "text_height" : obj.get_height(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "highlight_col" : obj.get_highlight_col()}}
     elif isinstance(obj, classes["Entry"]):
         #Entry contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "clamp_text" : obj.get_if_clamp()}): print("Uh oh entry")
-        return {"Entry" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "clamp_text" : obj.get_if_clamp()}}
+        return {"Entry" : {"pos" : obj.get_pos(), "alignment" : obj.get_alignment(), "dimensions" : obj.get_dimensions(), "text_height" : obj.get_height(), "color" : obj.get_col(), "image_name" : obj.get_img_name(), "border_width" : obj.get_border_width(), "border_color" : obj.get_border_col(), "border_image_name" : obj.get_border_img_name(), "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.get_text(), "font" : obj.get_font(), "text_color" : obj.get_text_col(), "clamp_text" : obj.get_if_clamp()}}
     
     
 
@@ -198,13 +188,13 @@ def new_thingy(choice : str):
         return Fade_Transition(int_input("Transition duration: ",positive=True), int_input("Fade out(0) or fade in (1): ", (0,1))==0, color_input("Color"), int_input("Transition smoothing: ", (0,3)))
     #More transitions
     elif choice.lower()=="button":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Button(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), choice_input("Action name: ", button_funcs.keys()), color_input("Color"), img_input("Background"), color_input("Highlight color"), img_input("Background when highlighted"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Button text: "), font_input(), color_input("Text color"), int_input("Inflate button on highlight: ",positive=True), int_input("Inflate button on click: ")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Button(c(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), c(int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Action name: ", button_funcs.keys()), color_input("Color"), img_input("Background"), color_input("Highlight color"), img_input("Background when highlighted"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Button text: "), font_input(), color_input("Text color"), int_input("Inflate button on highlight: ",positive=True), int_input("Inflate button on click: ")))
     elif choice.lower()=="label":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Label(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Label text: "), font_input(), color_input("Text color")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Label(c(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), c(int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Label text: "), font_input(), color_input("Text color")))
     elif choice.lower()=="text":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Text(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), input("Text: "), font_input(), color_input("Text color"), color_input("Highlight color")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Text(c(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: ",positive=True), input("Text: "), font_input(), color_input("Text color"), color_input("Highlight color")))
     elif choice.lower()=="entry":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Entry(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: ",positive=True), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), color_input("Highlight color"), img_input("Background when highlighted"), input("Entry text: "), font_input(), color_input("Text color")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Entry(c(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), c(int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), int_input("Text height: ",positive=True), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), color_input("Highlight color"), img_input("Background when highlighted"), input("Entry text: "), font_input(), color_input("Text color")))
 
 #-------------------------------------------------------Menu and Transitions---------------------------------------------------------------
 
@@ -220,9 +210,9 @@ class Transition:
 class Fade_Transition(Transition):
     def __init__(self, life: int, fade_out : bool = True, color : tuple = (0,0,0), fade_modifier = 0) -> None:
         super().__init__(life)
-        self.col = color
-        self.fo = fade_out
-        self.fm = fade_modifier
+        self.__col = color
+        self.__fo = fade_out
+        self.__fm = fade_modifier
     def update(self, menu_rect : pygame.Rect):
         global screen
         #Get surface that supports transparent drawing
@@ -230,15 +220,15 @@ class Fade_Transition(Transition):
 
         t = self.c/self.l
         #Fast
-        if self.fm==0: d=t
-        elif self.fm==1: d = t*t*t
+        if self.__fm==0: d=t
+        elif self.__fm==1: d = t*t*t
         #Slow then fast
-        elif self.fm==2: d = 1-(1-t)**3
+        elif self.__fm==2: d = 1-(1-t)**3
         #elif self.fm==3: d = 4*t*t*t*(1-t)+t*(1-4*(1-t)**3)
 
         life_tint = int(d*255)
-        if not self.fo: life_tint = 255-life_tint
-        c = (self.col[0], self.col[1], self.col[2], life_tint)
+        if not self.__fo: life_tint = 255-life_tint
+        c = (self.__col[0], self.__col[1], self.__col[2], life_tint)
 
         s.fill(c)
         ui_config.screen.blit(s, menu_rect)
@@ -247,11 +237,14 @@ class Fade_Transition(Transition):
         #print("Draw transition")
 
         self.c-=1
+        print(self.c)
 
     def get_fade_setting(self):
-        return self.fo
+        return self.__fo
     def get_fade_modifier(self):
-        return self.fm
+        return self.__fm
+    def get_col(self):
+        return (self.__col[0], self.__col[1], self.__col[2])
 
 class Menu:
     def __init__(self, me : list = list(), rect : pygame.Rect = None, in_t : Transition = Fade_Transition(100, fade_modifier=2), out_t : Transition = Fade_Transition(100, False, fade_modifier=2), #*, 
@@ -268,12 +261,12 @@ class Menu:
         self.switching_out = False
         self.ready_to_hide = False
 
-        self.bg_col = bg_col
-        self.bg_img = None
-        self.bg_img_n = bg_img_name
-        if self.bg_img==None and not self.bg_img_n==None:
-            self.bg_img = pygame.image.load(self.bg_img_n)
-        elif self.bg_img_n==None and not self.bg_img==None:
+        self.__bg_col = bg_col
+        self.__bg_img = None
+        self.__bg_img_n = bg_img_name
+        if self.__bg_img==None and not self.__bg_img_n==None:
+            self.__bg_img = pygame.image.load(self.__bg_img_n)
+        elif self.__bg_img_n==None and not self.__bg_img==None:
             raise Exception("Error, must provide image file name when providing image")
 
         #self.draw_menu()
@@ -294,11 +287,11 @@ class Menu:
                 e.update(mouse_pos, clicking, key_event)
 
     def draw_menu(self):
-        if self.bg_img==None:
-            self.__s.fill(self.bg_col)
+        if self.__bg_img==None:
+            self.__s.fill(self.__bg_col)
         else:
             #screen.fill((255,255,255))
-            self.__s.blit(pygame.transform.scale(self.bg_img, self.r.size), (0,0))
+            self.__s.blit(pygame.transform.scale(self.__bg_img, self.r.size), (0,0))
 
         ui_config.screen.blit(self.__s, self.r.topleft)
         #print("Draw bg")
@@ -312,75 +305,106 @@ class Menu:
         update_display = False
 
     def get_bg_col(self):
-        return (self.bg_col[0], self.bg_col[1], self.bg_col[2])
+        return (self.__bg_col[0], self.__bg_col[1], self.__bg_col[2])
     def get_bg_img_name(self):
-        return self.bg_img_n
+        return self.__bg_img_n
 
 
 
 #------------------------------------------------------------------Menu Elements------------------------------------------------------------------
 class Menu_Element:
-    def __init__(self, rect : pygame.Rect, align : str) -> None:
-        if isinstance(rect, list): rect = pygame.Rect(rect)
-        self.r = rect
-        self.a = align
-        self.align()
-    def align(self):
-        if self.a=="nw":
-            pass
-        elif self.a=="ne":
-            self.r.topleft = (self.r.left-self.r.w)
-        elif self.a=="se":
-            self.r.topleft = (self.r.left-self.r.w, self.r.top-self.r.h)
-        elif self.a=="sw":
-            self.r.topleft = (self.r.left, self.r.top-self.r.h)
-        elif self.a=="center":
-            self.r.topleft = (self.r.left-self.r.w/2, self.r.top-self.r.h/2)
+    def __init__(self, pos : c, align : str) -> None:
+        if not isinstance(pos, c): pos = c(pos)
+        self.__p = pos
+        self.__a = align
+    def aligned_pos(self, dimensions : c):
+        if self.__a=="nw":
+            return self.__p
+        elif self.__a=="ne":
+            return self.__p-c(dimensions.x, 0)
+        elif self.__a=="se":
+            return self.__p-dimensions
+        elif self.__a=="sw":
+            return self.__p-c(0, dimensions.y)
+        elif self.__a=="center":
+            return self.__p+c(dimensions.x/2, -dimensions.y/2)
         else:
-            print(f"ERROR: Invalid alignment '{self.a}'")
-
+            print(f"ERROR: Invalid alignment '{self.__a}'")
+            return None
     def update(self, mouse_pos : c, clicking : bool, key_event = None):
         pass #Update appearence
     def display(self):
         pass #Display
+    def get_pos(self):
+        return self.__p.t()
+    def get_alignment(self):
+        return self.__a
+    def set_pos(self, pos : c):
+        self.__p = pos
 class Text_Element(Menu_Element):
-    def __init__(self, rect : pygame.Rect, align : str, text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
-        super().__init__(rect, align)
+    def __init__(self, pos: c, align: str, dimensions : c, text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
+        if not isinstance(dimensions, c): dimensions = c(dimensions)
+        super().__init__(pos, align)
+        self.__d = dimensions
+        p = self.aligned_pos(self.__d)
+        self.__r = pygame.Rect(p.x, ui_config.display_dimensions[1]-p.y, self.__d.x, self.__d.y)
 
-        self.t = text
-        self.t_col = text_col
-        self.f_n = font_name
-        self.f = font_name_to_font(self.f_n)
+        self.__t = text
+        self.__t_col = text_col
+        self.__f_n = font_name
+        self.__f = font_name_to_font(self.__f_n)
+    def get_rect(self):
+        return self.__r
+    def get_dimensions(self):
+        return self.__d.t()
+    def get_text(self):
+        return self.__t
+    def get_font(self):
+        return self.__f_n
+    def get_text_col(self):
+        return (self.__t_col[0], self.__t_col[1], self.__t_col[2])
+    def set_dimensions(self, dimensions : c):
+        self.__d = dimensions
 class Text_Box_Element(Text_Element):
-    def __init__(self, rect : pygame.Rect, align : str,
+    def __init__(self, pos: c, align: str, dimensions: c, 
                  
                  text: str = "Press Me", font_name: str = "Helvetica", text_col=(0, 0, 0),
                  
                  col = (200,200,200), img_name : str = None,
                  
                  border_width = 20, border_color = (0,0,0), border_img_name : str = None) -> None:
-        super().__init__(rect, align, text, font_name, text_col)
-        self.col = col
+        super().__init__(pos, align, dimensions, text, font_name, text_col)
+        self.__col = col
 
-        self.i_n = img_name
-        self.i = None
-        if not self.i_n==None:
+        self.__i_n = img_name
+        self.__i = None
+        if not self.__i_n==None:
             try:
-                self.i = pygame.image.load(self.i_n)
+                self.__i = pygame.image.load(self.__i_n)
             except:
                 print(f"ERROR: could not load image '{img_name}")
 
-        self.b_w = border_width
-        self.b_col = border_color
-        self.b_i_n = border_img_name
-        self.b_i = None
-        if not self.b_i_n==None:
+        self.__b_w = border_width
+        self.__b_col = border_color
+        self.__b_i_n = border_img_name
+        self.__b_i = None
+        if not self.__b_i_n==None:
             try:
-                self.b_i = pygame.image.load(self.b_i_n)
+                self.__b_i = pygame.image.load(self.__b_i_n)
             except:
                 print(f"ERROR: could not load image '{border_img_name}")
+    def get_col(self):
+        return (self.__col[0], self.__col[1], self.__col[2])
+    def get_border_col(self):
+        return (self.__b_col[0], self.__b_col[1], self.__b_col[2])
+    def get_img_name(self):
+        return self.__i_n
+    def get_border_img_name(self):
+        return self.__b_i_n
+    def get_border_width(self):
+        return self.__b_w
 class Button(Text_Box_Element):
-    def __init__(self, rect : pygame.Rect, align : str, action_name : str, #*, 
+    def __init__(self, pos: c, align: str, dimensions : c, action_name : str, #*, 
                  col = (200,200,200), 
                  
                  img_name : str = None, highlight_col = (240,240,240), highlight_img_name : str = None, 
@@ -390,21 +414,24 @@ class Button(Text_Box_Element):
                  text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0), 
                  
                  inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+        super().__init__(pos, align, dimensions, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+        self.__p = self._Menu_Element__p
+        self.__a = self._Menu_Element__a
+        self.__r = self._Text_Element__r
 
-        '''self.d = self._Text_Elementd
-        self.t = self._Text_Elementt
-        self.f = self._Text_Elementf
-        self.t_col = self._Text_Elementt_col
-        self.col = self._Text_Box_Elementcol
+        self.__d = self._Text_Element__d
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
+        self.__t_col = self._Text_Element__t_col
+        self.__col = self._Text_Box_Element__col
         self.__i = self._Text_Box_Element__i
-        self.b_w = self._Text_Box_Elementb_w
-        self.b_col = self._Text_Box_Elementb_col
-        self.b_i = self._Text_Box_Elementb_i'''
+        self.__b_w = self._Text_Box_Element__b_w
+        self.__b_col = self._Text_Box_Element__b_col
+        self.__b_i = self._Text_Box_Element__b_i
 
 
-        self.__o_r = self.r
-        self.__o_i = self.i
+        self.__o_r = self.__r
+        self.__o_i = self.__i
         
 
         self.__h_i_n = highlight_img_name
@@ -415,7 +442,7 @@ class Button(Text_Box_Element):
             except:
                 print(f"ERROR: could not load image '{highlight_img_name}")
 
-        self.__o_col = self.col
+        self.__o_col = self.__col
         self.__h_col = highlight_col
 
         self.__func_n = action_name
@@ -425,57 +452,56 @@ class Button(Text_Box_Element):
         self.__i_c = inflate_on_click
 
         self.__m_c = multiple_calls
-        self.__acitvate_on_click = True
+        self.acitvate_on_click = True
     def update(self, mouse_pos: c, clicking: bool, key_event=None):
         global update_display
         
         #If mouse hovering
-        if self.r.collidepoint(mouse_pos[0], mouse_pos[1]):
-            if not self.r==self.__o_r.inflate(self.__i_h, self.__i_h):
-                self.r = self.__o_r.inflate(self.__i_h, self.__i_h)
+        if self.__r.collidepoint(mouse_pos[0], mouse_pos[1]):
+            if not self.__r==self.__o_r.inflate(self.__i_h, self.__i_h):
+                self.__r = self.__o_r.inflate(self.__i_h, self.__i_h)
 
-                if self.__h_i==None: self.col = self.__h_col
-                else: self.i = self.__h_i
+                if self.__h_i==None: self.__col = self.__h_col
+                else: self.__i = self.__h_i
                 update_display = True
             #If button clicked
-            if clicking and self.__acitvate_on_click:
-                if not self.r==self.__o_r.inflate(self.__i_c, self.__i_c):
-                    self.r = self.__o_r.inflate(self.__i_c, self.__i_c)
+            if clicking and self.acitvate_on_click:
+                if not self.__r==self.__o_r.inflate(self.__i_c, self.__i_c):
+                    self.__r = self.__o_r.inflate(self.__i_c, self.__i_c)
                     update_display = True
                 button_funcs[self.__func_n]()
                 #Only activate once
                 if not self.__m_c:
-                    self.__acitvate_on_click = False
-            elif not clicking and not self.__acitvate_on_click:
+                    self.acitvate_on_click = False
+            elif not clicking and not self.acitvate_on_click:
                 #Reset to activate once clicked again
-                self.__acitvate_on_click = True
+                self.acitvate_on_click = True
 
-        elif not self.r==self.__o_r:
-            self.col = self.__o_col
-            self.i = self.__o_i
-            self.r = self.__o_r
+        elif not self.__r==self.__o_r:
+            self.__col = self.__o_col
+            self.__i = self.__o_i
+            self.__r = self.__o_r
             update_display = True
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        if self.b_w>0:
-            w, h = self.r.w, self.r.h
-            if self.b_i==None:
-                pygame.draw.rect(ui_config.screen, self.b_col, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100))
+        if self.__b_w>0:
+            if self.__b_i==None:
+                pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100))
             else:
-                ui_config.screen.blit(pygame.transform.scale(self.b_i, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100).size), (self.r.left-(1+self.b_w/w*100)/2, self.r.top-(1+self.b_w/h*100)/2))
+                ui_config.screen.blit(pygame.transform.scale(self.__b_i, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100).size), (self.__r.left-(1+self.__b_w/self.__d.x*100)/2, self.__r.top-(1+self.__b_w/self.__d.y*100)/2))
         #Draw button
-        if not self.i==None:
+        if not self.__i==None:
             #If has image, draw image instead
-            ui_config.screen.blit(pygame.transform.scale(self.i, self.r.size), self.r.topleft)
-        else: pygame.draw.rect(ui_config.screen, self.col, self.r)
+            ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)
+        else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
-        if not self.t=="":
-            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
+        if not self.__t=="":
+            fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
         #print("Draw button")
     def get_action(self):
-        return button_funcs[self.__func_n]
-    def get_action_name(self):
+        return button_funcs[self.__func_i]
+    def get_action_n(self):
         return self.__func_n
     def get_highlight_col(self):
         return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
@@ -488,27 +514,27 @@ class Button(Text_Box_Element):
     def get_multiple_calls(self):
         return self.__m_c
 class Label(Text_Box_Element):
-    def __init__(self, rect : pygame.Rect, align : str,# *, 
+    def __init__(self, pos: c, align: str, dimensions : c,# *, 
                  
                  col = (200,200,200), img_name : str = None, 
                  
                  border_width = 20, border_color = (0,0,0), border_img_name : str = None, 
                  
                  text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
-        '''self.p = self._Menu_Elementp
+        super().__init__(pos, align, dimensions, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+        self.__p = self._Menu_Element__p
         self.__a = self._Menu_Element__a
-        self.r = self._Text_Elementr
+        self.__r = self._Text_Element__r
 
-        self.d = self._Text_Elementd
-        self.t = self._Text_Elementt
-        self.f = self._Text_Elementf
-        self.t_col = self._Text_Elementt_col
-        self.col = self._Text_Box_Elementcol
+        self.__d = self._Text_Element__d
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
+        self.__t_col = self._Text_Element__t_col
+        self.__col = self._Text_Box_Element__col
         self.__i = self._Text_Box_Element__i
-        self.b_w = self._Text_Box_Elementb_w
-        self.b_col = self._Text_Box_Elementb_col
-        self.b_i = self._Text_Box_Elementb_i'''
+        self.__b_w = self._Text_Box_Element__b_w
+        self.__b_col = self._Text_Box_Element__b_col
+        self.__b_i = self._Text_Box_Element__b_i
 
     '''def update(self, mouse_pos: c, clicking: bool, key_event=None):
         '''
@@ -516,39 +542,42 @@ class Label(Text_Box_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        if self.b_w>0:
-            w, h = self.r.w, self.r.h
-            if self.b_i==None:
-                pygame.draw.rect(ui_config.screen, self.b_col, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100))
+        if self.__b_w>0:
+            if self.__b_i==None:
+                pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100))
             else:
-                ui_config.screen.blit(pygame.transform.scale(self.b_i, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100).size), (self.r.left-(1+self.b_w/w*100)/2, self.r.top-(1+self.b_w/h*100)/2))
+                ui_config.screen.blit(pygame.transform.scale(self.__b_i, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100).size), (self.__r.left-(1+self.__b_w/self.__d.x*100)/2, self.__r.top-(1+self.__b_w/self.__d.y*100)/2))
         #Draw button
-        if not self.i==None:
+        if not self.__i==None:
             #If has image, draw image instead
-            ui_config.screen.blit(pygame.transform.scale(self.i, self.r.size), self.r.topleft)
-        else: pygame.draw.rect(ui_config.screen, self.col, self.r)
+            ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)
+        else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
-        if not self.t=="":
-            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
+        if not self.__t=="":
+            fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r), self.__r.topleft
         #print("Draw label")
 class Text(Text_Element):
-    def __init__(self, rect : pygame.Rect, align : str,
+    def __init__(self, pos: c, align: str, height : int, 
                  
                  text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0), 
                  
                  highlight_col = (240,240,240)) -> None:
-        super().__init__(rect, align, text, font_name, text_col)
+        super().__init__(pos, align, c(0,0), text, font_name, text_col)
         
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
+        self.__col = self._Text_Element__t_col
         self.__h_col = highlight_col
-        self.__o_col = self.t_col
+        self.__o_col = self.__col
 
-        w, h = paragraph_dim(text, text_col, self.f, self.r.h)
-        self.r.w = w/h*self.r.h
+        w, h = paragraph_dim(text, text_col, self.__f, height)
+        self.__p = self.aligned_pos(c(w/h*height, height))
+        self.__r = pygame.Rect(self.__p.x, ui_config.display_dimensions[1]-self.__p.y, w/h*height, height)
 
 
     def update(self, mouse_pos: c, clicking: bool, key_event=None):
         global update_display
-        if self.r.collidepoint(mouse_pos):
+        if self.__r.collidepoint(mouse_pos):
             #Text being highlighted
             self.__col = self.__h_col
         else:
@@ -558,13 +587,15 @@ class Text(Text_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw Text
-        if not self.t=="":
-            ui_config.screen.blit(pygame.transform.scale(self.f.render(self.t, True, self.t_col), self.r.size), self.r.topleft)
+        if not self.__t=="":
+            ui_config.screen.blit(pygame.transform.scale(self.__f.render(self.__t, True, self.__col), self.__r.size), self.__r.topleft)
         #print("Draw text")
+    def get_height(self):
+        return self.__r.height
     def get_highlight_col(self):
         return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
 class Entry(Text_Box_Element):
-    def __init__(self, rect : pygame.Rect, align : str, text_height : int = None,# *, 
+    def __init__(self, pos: c, align: str, dimensions : c, text_height : int = None,# *, 
                  
                  col = (200,200,200), img_name : str = None, 
                  
@@ -573,18 +604,18 @@ class Entry(Text_Box_Element):
                  highlight_col = (240,240,240), highlight_img_name : str = None, 
                  
                  text = "", font_name : str = "Helvetica", text_col = (0,0,0), clamp_text : bool = True) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
-        '''self.d = self._Text_Elementd
-        self.r = self._Text_Elementr
+        super().__init__(pos, align, dimensions, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+        self.__d = self._Text_Element__d
+        self.__r = self._Text_Element__r
 
-        self.t = self._Text_Elementt
-        self.f = self._Text_Elementf'''
+        self.__t = self._Text_Element__t
+        self.__f = self._Text_Element__f
         self.__t_r = None
         self.__t_h = text_height
-        '''self.t_col = self._Text_Elementt_col
+        self.__t_col = self._Text_Element__t_col
 
-        self.__i = self._Text_Box_Element__i'''
-        self.__o_i = self.i
+        self.__i = self._Text_Box_Element__i
+        self.__o_i = self.__i
         self.__h_i_n = highlight_img_name
         self.__h_i = None
         if not self.__h_i_n==None:
@@ -593,13 +624,13 @@ class Entry(Text_Box_Element):
             except:
                 print(f"ERROR: could not load image '{highlight_img_name}")
 
-        #self.col = self._Text_Box_Elementcol
-        self.__o_col = self.col
+        self.__col = self._Text_Box_Element__col
+        self.__o_col = self.__col
         self.__h_col = highlight_col
 
-        '''self.b_w = self._Text_Box_Elementb_w
-        self.b_col = self._Text_Box_Elementb_col
-        self.b_i = self._Text_Box_Elementb_i'''
+        self.__b_w = self._Text_Box_Element__b_w
+        self.__b_col = self._Text_Box_Element__b_col
+        self.__b_i = self._Text_Box_Element__b_i
 
         self.__selected = False
 
@@ -614,42 +645,42 @@ class Entry(Text_Box_Element):
         if self.__selected and not key_event==None:
             if self.__type_cooldown<=0 or not self.__last_key==key_event.key:
                 if key_event.key==pygame.K_BACKSPACE:
-                    self.t = self.t[:-1]    
+                    self.__t = self.__t[:-1]    
                 elif key_event.key==pygame.K_DELETE:
-                    self.t = ""
+                    self.__t = ""
                 elif key_event.key==pygame.K_RETURN:
                     self.__selected = False
                 else:
-                    self.t+=key_event.unicode
-                    if self.__ct and paragraph_dim(self.t, self.t_col, self.f, self.r.height)[0]>self.r.width:
-                        self.t = self.t[:-1]
+                    self.__t+=key_event.unicode
+                    if self.__ct and paragraph_dim(self.__t, self.__t_col, self.__f, self.__r.height)[0]>self.__r.width:
+                        self.__t = self.__t[:-1]
                 update_display = True
                 self.__type_cooldown = 5
 
-                display_text = fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False, False)
-                if self.__t_h==None: h = self.r.height
+                display_text = fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r, self.__t_h, False, False)
+                if self.__t_h==None: h = self.__r.height
                 else: h = self.__t_h*(1+display_text.count("\n"))
-                w, h = paragraph_dim(display_text, self.t_col, self.f, h)
-                self.__t_r = pygame.Rect(self.r.left, self.r.top, w, h)
+                w, h = paragraph_dim(display_text, self.__t_col, self.__f, h)
+                self.__t_r = pygame.Rect(self.__r.left, self.__r.top, w, h)
 
                 self.__last_key = key_event.key
 
         if clicking:
             if self.__acitvate_on_click:
-                if self.r.collidepoint(mouse_pos) and not self.__selected:
+                if self.__r.collidepoint(mouse_pos) and not self.__selected:
                     self.__selected = True
                 else: self.__selected = False
                 self.__acitvate_on_click = False
         elif not self.__acitvate_on_click: 
             self.__acitvate_on_click = True
 
-        if self.__selected and not (self.col==self.__h_col and self.i==self.__h_i):
-            self.col = self.__h_col
-            self.i = self.__h_i
+        if self.__selected and not (self.__col==self.__h_col and self.__i==self.__h_i):
+            self.__col = self.__h_col
+            self.__i = self.__h_i
             update_display = True
-        elif not self.__selected and not (self.col==self.__o_col and self.i==self.__o_i):
-            self.col = self.__o_col
-            self.i = self.__o_i
+        elif not self.__selected and not (self.__col==self.__o_col and self.__i==self.__o_i):
+            self.__col = self.__o_col
+            self.__i = self.__o_i
             update_display = True
 
         self.__type_cooldown-=1
@@ -657,24 +688,23 @@ class Entry(Text_Box_Element):
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
         #Draw border
-        if self.b_w>0:
-            w, h = self.r.w, self.r.h
-            if self.b_i==None:
-                pygame.draw.rect(ui_config.screen, self.b_col, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100))
+        if self.__b_w>0:
+            if self.__b_i==None:
+                pygame.draw.rect(ui_config.screen, self.__b_col, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100))
             else:
-                ui_config.screen.blit(pygame.transform.scale(self.b_i, self.r.inflate(1+self.b_w/w*100, 1+self.b_w/h*100).size), (self.r.left-(1+self.b_w/w*100)/2, self.r.top-(1+self.b_w/h*100)/2))
+                ui_config.screen.blit(pygame.transform.scale(self.__b_i, self.__r.inflate(1+self.__b_w/self.__d.x*100, 1+self.__b_w/self.__d.y*100).size), (self.__r.left-(1+self.__b_w/self.__d.x*100)/2, self.__r.top-(1+self.__b_w/self.__d.y*100)/2))
         #Draw middle
-        if not self.i==None:
+        if not self.__i==None:
             #If has image, draw image instead
-            ui_config.screen.blit(pygame.transform.scale(self.i, self.r.size), self.r.topleft)
-        else: pygame.draw.rect(ui_config.screen, self.col, self.r)
+            ui_config.screen.blit(pygame.transform.scale(self.__i, self.__r.size), self.__r.topleft)
+        else: pygame.draw.rect(ui_config.screen, self.__col, self.__r)
         #Draw text
-        if not self.t=="":
+        if not self.__t=="":
             if self.__ct:
-                ui_config.screen.blit(pygame.transform.scale(self.f.render(self.t, True, self.t_col), self.__t_r.size), self.r.topleft)
-            else: fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False), self.r.topleft
+                ui_config.screen.blit(pygame.transform.scale(self.__f.render(self.__t, True, self.__t_col), self.__t_r.size), self.__r.topleft)
+            else: fit_text_to_rect(self.__t, self.__t_col, self.__f, self.__r, self.__t_h, False), self.__r.topleft
         #print("Draw entry")
-    def get_text_height(self):
+    def get_height(self):
         return self.__t_h
     def get_highlight_col(self):
         return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
@@ -694,7 +724,7 @@ def init_menus(display_d : tuple, start_menus : list = [], start_menu : int = 0)
     ui_config.menus = start_menus
     ui_config.current_menu_index = start_menu
 
-def main(disable_elements = False, select_rect : pygame.Rect = None):
+def main(disable_elements = False):
     '''f1 = False
     f2 = False'''
     #global redraw_stuff, update_display, current_menu_index, next_menu_index, clicking, exit_loop, key_pressed, menus
@@ -750,10 +780,6 @@ def main(disable_elements = False, select_rect : pygame.Rect = None):
             ui_config.menus[ui_config.current_menu_index].display()
         pygame.display.update(ui_config.menus[ui_config.current_menu_index].r)
         ui_config.redraw_stuff = True
-
-    if not select_rect==None:
-        pygame.draw.rect(ui_config.screen, ui_config.select_rect_col, select_rect,width=20)
-        pygame.display.update(select_rect)
 
     ui_config.clock.tick(60)
     return events

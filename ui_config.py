@@ -2,6 +2,7 @@ import pygame
 
 display_dimensions = (-1, -1)
 screen : pygame.Surface = -1
+bg_col = pygame.Color("white")
 clock = pygame.time.Clock()
 
 #List of the available menus

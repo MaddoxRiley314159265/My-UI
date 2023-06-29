@@ -63,7 +63,7 @@ def save(save_file : str):
     "file_version" : file_version,
 
     #Save screen size
-    "screen_size" : ui_config.display_dimensions,
+    "screen_size" : ui_config.display_dimensions.t(),
     #Save current menu
     "open_menu" : ui_config.current_menu_index,
     #Save menus
@@ -72,9 +72,13 @@ def save(save_file : str):
     }} )
     
     f = open(save_file, "w")
-    f.write(dumps(saves, indent=4))
+    try:
+        json = dumps(saves, indent=4)
+    except:
+        print("ERROR: could not convert to JSON")
+    else:
+        f.write(json)
     f.close()
-
 def load(save_file : str, save_name : str):
     f = open(save_file, "r")
 
@@ -82,7 +86,7 @@ def load(save_file : str, save_name : str):
         my_save = loads(f.read())[save_name]
     except:
         print(f"Invalid save name '{save_name}'")
-        return
+        return -1
 
     if not my_save["file_version"]==file_version:
         #File version
@@ -109,39 +113,26 @@ def load(save_file : str, save_name : str):
                 my_elements[me_i] = classes[my_element_name](*list(get_val(me).values()))
                 
         ui_config.menus[mi] = Menu(my_elements, my_menus[mi]["rect"], classes[get_key(my_menus[mi]["in_transition"])](*list(get_val(my_menus[mi]["in_transition"]).values())), classes[get_key(my_menus[mi]["out_transition"])](*list(get_val(my_menus[mi]["out_transition"]).values())), *list(my_menus[mi].values())[4:])
-
-            
-
-def bad(l):
-    for i in list(l.values()):
-        if isinstance(i, c):
-            return True
-    return False
+    return 0
 
 def serialize(obj):
     if isinstance(obj, classes["Menu"]):
         #Menu contructor arguments
-        if bad({"elements" : [serialize(e) for e in obj.menu_elements], "rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "in_transition" : serialize(obj.in_transition), "out_transition" : serialize(obj.out_transition), "bg_color" : obj.get_bg_col(), "bg_image_name" : obj.get_bg_img_name()}): print("Uh oh menu")
         return {"elements" : [serialize(e) for e in obj.menu_elements], "rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "in_transition" : serialize(obj.in_transition), "out_transition" : serialize(obj.out_transition), "bg_color" : obj.get_bg_col(), "bg_image_name" : obj.get_bg_img_name()}
     elif isinstance(obj, classes["Fade_Transition"]):
         #Fade transition contructor arguments
-        if bad({"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : c_t(obj.col), "fade_modifier" : obj.get_fade_modifier()}): print("Uh oh transition")
         return {"Fade_Transition" :  {"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : c_t(obj.col), "fade_modifier" : obj.get_fade_modifier()}}
     elif isinstance(obj, classes["Button"]):
         #Button contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}): print("Uh oh button")
         return {"Button" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}}
     elif isinstance(obj, classes["Label"]):
         #Label contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col}): print("Uh oh label")
         return {"Label" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col}}
     elif isinstance(obj, classes["Text"]):
         #Text contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col()}): print("Uh oh text")
-        return {"Text" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col()}}
+        return {"Text" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col(), "recalculate text bounds" : False}}
     elif isinstance(obj, classes["Entry"]):
         #Entry contructor arguments
-        if bad({"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "clamp_text" : obj.get_if_clamp()}): print("Uh oh entry")
         return {"Entry" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : obj.b_col, "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : obj.t_col, "clamp_text" : obj.get_if_clamp()}}
     
     
@@ -195,16 +186,16 @@ def new_thingy(choice : str):
         print("Creating menu...")
         ui_config.menus.append(Menu(list(), pygame.Rect(int_input("Menu x (0(left)->screen width): ", (0,ui_config.display_dimensions[0])), int_input("Menu y (0(top)->screen height)", (0,ui_config.display_dimensions[1])), int_input("Menu width: ", (1,ui_config.display_dimensions[0])), int_input("Menu height: ", (1,ui_config.display_dimensions[1]))), new_thingy(choice_input("Type of transition for switching to this menu: ", transitions)), new_thingy(choice_input("Type of tran", transitions)), color_input("Background color"), img_input("Background")))
     elif choice.lower()=="fade transition":
-        return Fade_Transition(int_input("Transition duration: ",positive=True), int_input("Fade out(0) or fade in (1): ", (0,1))==0, color_input("Color"), int_input("Transition smoothing: ", (0,3)))
+        return Fade_Transition(int_input("Transition duration (def 100): "), int_input("Fade out(0) or fade in (1): ", (0,1))==0, color_input("Color"), int_input("Transition smoothing: ", (0,3)))
     #More transitions
     elif choice.lower()=="button":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Button(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), choice_input("Action name: ", button_funcs.keys()), color_input("Color"), img_input("Background"), color_input("Highlight color"), img_input("Background when highlighted"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Button text: "), font_input(), color_input("Text color"), int_input("Inflate button on highlight: ",positive=True), int_input("Inflate button on click: ")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Button(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), choice_input("Action name: ", button_funcs.keys()), color_input("Color"), img_input("Background"), color_input("Highlight color"), img_input("Background when highlighted"), int_input("Border widith: "), color_input("Border color"), img_input("Border image"), input("Button text: "), font_input(), color_input("Text color"), int_input("Inflate button on highlight: "), int_input("Inflate button on click: ")))
     elif choice.lower()=="label":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Label(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), input("Label text: "), font_input(), color_input("Text color")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Label(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), color_input("Color"), img_input("Background"), int_input("Border widith: "), color_input("Border color"), img_input("Border image"), input("Label text: "), font_input(), color_input("Text color")))
     elif choice.lower()=="text":
         ui_config.menus[ui_config.current_menu_index].menu_elements.append(Text(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), input("Text: "), font_input(), color_input("Text color"), color_input("Highlight color")))
     elif choice.lower()=="entry":
-        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Entry(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: ",positive=True), color_input("Color"), img_input("Background"), int_input("Border widith: ",positive=True), color_input("Border color"), img_input("Border image"), color_input("Highlight color"), img_input("Background when highlighted"), input("Entry text: "), font_input(), color_input("Text color")))
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Entry(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: "), color_input("Color"), img_input("Background"), int_input("Border widith: "), color_input("Border color"), img_input("Border image"), color_input("Highlight color"), img_input("Background when highlighted"), input("Entry text: "), font_input(), color_input("Text color")))
 
 #-------------------------------------------------------Menu and Transitions---------------------------------------------------------------
 
@@ -536,14 +527,15 @@ class Text(Text_Element):
                  
                  text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0), 
                  
-                 highlight_col = (240,240,240)) -> None:
+                 highlight_col = (240,240,240), recalc_rect = True) -> None:
         super().__init__(rect, align, text, font_name, text_col)
         
         self.__h_col = highlight_col
         self.__o_col = self.t_col
 
-        w, h = paragraph_dim(text, text_col, self.f, self.r.h)
-        self.r.w = w/h*self.r.h
+        if recalc_rect:
+            w, h = paragraph_dim(text, text_col, self.f, self.r.h)
+            self.r.w = w/h*self.r.h
 
 
     def update(self, mouse_pos: c, clicking: bool, key_event=None):
@@ -720,7 +712,7 @@ def main(disable_elements = False, select_rect : pygame.Rect = None):
             elif event.type==pygame.MOUSEBUTTONUP:
                 ui_config.clicking = False
 
-    if len(ui_config.menus)==0: return
+    if len(ui_config.menus)==0: return events
 
     '''if f1:
         menus[current_menu].menu_elements[0].r.width-=1
@@ -743,18 +735,20 @@ def main(disable_elements = False, select_rect : pygame.Rect = None):
 
     ui_config.menus[ui_config.current_menu_index].update(pygame.mouse.get_pos(), ui_config.clicking, ui_config.key_pressed)
 
-    if ui_config.update_display:
+    #if ui_config.update_display:
         #print("Update")
-        if ui_config.redraw_stuff: 
-            #print("Draw menu")
-            ui_config.menus[ui_config.current_menu_index].display()
-        pygame.display.update(ui_config.menus[ui_config.current_menu_index].r)
-        ui_config.redraw_stuff = True
+    ui_config.screen.fill(ui_config.bg_col)
+    if ui_config.redraw_stuff: 
+        #print("Draw menu")
+        ui_config.menus[ui_config.current_menu_index].display()
+    #pygame.display.update(ui_config.menus[ui_config.current_menu_index].r)
+    ui_config.redraw_stuff = True
 
     if not select_rect==None:
         pygame.draw.rect(ui_config.screen, ui_config.select_rect_col, select_rect,width=20)
-        pygame.display.update(select_rect)
+        #pygame.display.update(select_rect)
 
+    pygame.display.flip()
     ui_config.clock.tick(60)
     return events
 

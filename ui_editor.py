@@ -1,10 +1,12 @@
 from my_ui import *
+from VectorUtil import c
+from pygame_inputs import int_input
 import ui_config
 import pygame
 
 save_file = "ui_saves.json"
 
-new_thingies = list(classes.keys())
+new_thingies = [k.lower() for k in classes.keys()]
 for nt in new_thingies:
     if "transition" in nt.lower():
         new_thingies.remove(nt)
@@ -12,13 +14,16 @@ for nt in new_thingies:
 pygame.init()
 
 #'''
-load_name = input("Load save? (Don't type to start new save): ")
-if not load_name=="": load(save_file, "Demo")
-else:
-    dd = (int(input("Screen width: ")), int(input("Screen height: ")))
-    init_menus(dd)
-    #ui_config.menus.append(Menu())
-    #'''
+while True:
+    load_name = input("Load save? (Don't type to start new save): ")
+    if not load_name=="": 
+        if load(save_file, load_name)>=0: break
+    else:
+        dd = (int(int_input("Screen width: ")), int(int_input("Screen height: ")))
+        ui_config.bg_col = color_input("Background color")
+        init_menus(dd)
+        #ui_config.menus.append(Menu())
+        #'''
 
 '''
 init_menus((1000, 800))
@@ -53,18 +58,25 @@ def click(pos):
                 edit_element = ui_config.menus[ui_config.current_menu_index]
                 print("Selected current menu")
 
+def act(a, coord, move_mult):
+    if a%4==0: return (coord+c(0,-1)*move_mult).t()
+    elif a%4==1: return (coord+c(-1,0)*move_mult).t()
+    elif a%4==2: return (coord+c(0,1)*move_mult).t()
+    elif a%4==3: return (coord+c(1,0)*move_mult).t()
+
 key_acts = {pygame.K_w : 0, pygame.K_a : 1, pygame.K_s : 2, pygame.K_d : 3, pygame.K_UP : 4, pygame.K_LEFT : 5, pygame.K_DOWN : 6, pygame.K_RIGHT : 7}
 
 current_acts = []
 fine_tune = False
+
+copy_thing = None
 
 edit_element = None
 while not ui_config.exit_loop:
     if edit_element==None: select_rect = None
     else: select_rect = edit_element.r
 
-    events = main(True,select_rect)
-    for event in events:
+    for event in main(True,select_rect):
         if event.type==pygame.QUIT:
             ui_config.exit_loop = True
         elif event.type==pygame.KEYDOWN:
@@ -72,13 +84,20 @@ while not ui_config.exit_loop:
                 #Create new thingy
                 new_thing = ""
                 while not new_thing in new_thingies and not new_thing.lower()=="none":
-                    new_thing = input("What would you like to add? (None to cancel): ")
-                if not new_thingy.lower()==None:
+                    new_thing = input("What would you like to add? (None to cancel): ").lower()
+                if not new_thing.lower()=="none":
                     new_thingy(new_thing)
             elif not key_acts.get(event.key)==None:
                 current_acts.append(key_acts.get(event.key))
             elif event.key==pygame.K_LSHIFT:
                 fine_tune = True
+            elif event.key==pygame.K_c:
+                copy_thing = edit_element
+            elif event.key==pygame.K_v:
+                if isinstance(copy_thing, Menu):
+                    ui_config.menus.append(copy_thing)
+                else:
+                    ui_config.menus[ui_config.current_menu_index].menu_elements.append(copy_thing)
 
         elif event.type==pygame.KEYUP:
             if not key_acts.get(event.key)==None:
@@ -86,7 +105,7 @@ while not ui_config.exit_loop:
             elif event.key==pygame.K_LSHIFT:
                 fine_tune = False
         elif event.type==pygame.MOUSEBUTTONDOWN:
-            click(pygame.mouse.get_pos())
+            if len(ui_config.menus)>0: click(pygame.mouse.get_pos())
         #elif event.type==pygame.MOUSEBUTTONUP:
 
     if not edit_element==None:
@@ -97,14 +116,16 @@ while not ui_config.exit_loop:
         if len(current_acts)>0:
             ui_config.update_display = True
             for a in current_acts:
-                if a==0: edit_element.r.topleft = (p+c(0,-1)*move_mult).t()
-                if a==1: edit_element.r.topleft = (p+c(-1,0)*move_mult).t()
-                if a==2: edit_element.r.topleft = (p+c(0,1)*move_mult).t()
-                if a==3: edit_element.r.topleft = (p+c(1,0)*move_mult).t()
+                if a<4: edit_element.r.topleft = act(a, p, move_mult)
 
-                if a==4: edit_element.r.size = (d+c(0,-1)*move_mult).t()
-                if a==5: edit_element.r.size = (d+c(-1,0)*move_mult).t()
-                if a==6: edit_element.r.size = (d+c(0,1)*move_mult).t()
-                if a==7: edit_element.r.size = (d+c(1,0)*move_mult).t()
+                else: edit_element.r.size = act(a, d, move_mult)
+            if isinstance(edit_element, Menu):
+                #If moving menu, also move its elements
+                for e in edit_element.menu_elements:
+                    p = c(e.r.topleft)
+                    d = c(e.r.size)
+                    for a in current_acts:
+                        if a<4: e.r.topleft = act(a, p, move_mult)
+                        else: e.r.size = act(a, d, move_mult)
 
 save(save_file)

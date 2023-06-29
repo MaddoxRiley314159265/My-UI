@@ -1,6 +1,6 @@
 import pygame
 
-def int_input(prompt, range = None, positive = False):
+def int_input(prompt, range = None, positive = True):
     while True:
         i = input(prompt)
         try:
@@ -15,6 +15,7 @@ def choice_input(prompt, choices):
     while True:
         i = input(prompt)
         if i.lower() in choices: break
+    return i
 def color_input(prompt) -> pygame.Color:
     print(prompt+":")
     ui = int_input("Would you like to provide color name(0) or set rgb values(1)? ", (0,1))
@@ -47,6 +48,7 @@ def font_input():
     while True:
         ui = input("Font name: ")
         if not font_name_to_font(ui)==None: break
+    return ui
 
 def font_name_to_font(font_name : str):
     try:

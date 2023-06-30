@@ -97,13 +97,16 @@ while not ui_config.exit_loop:
             elif event.key==pygame.K_LSHIFT:
                 fine_tune = True
             elif event.key==pygame.K_c:
-                copy_thing = edit_element
+                print("Copied", edit_element)
+                copy_thing = serialize(edit_element)
             elif event.key==pygame.K_v:
                 unsaved_changes = True
-                if isinstance(copy_thing, Menu):
-                    ui_config.menus.append(copy_thing)
+                paste_thing = deserialize(copy_thing)
+                print("Pasted", paste_thing)
+                if isinstance(paste_thing, Menu):
+                    ui_config.menus.append(paste_thing)
                 else:
-                    ui_config.menus[ui_config.current_menu_index].menu_elements.append(copy_thing)
+                    ui_config.menus[ui_config.current_menu_index].menu_elements.append(paste_thing)
             elif event.key==pygame.K_p:
                 save(save_file)
 

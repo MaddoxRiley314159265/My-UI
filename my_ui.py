@@ -1,5 +1,6 @@
 import pygame
 from textwrap import fill
+from pygame_inputs import pygame
 import ui_config
 from json import loads, dumps
 from pygame_inputs import *
@@ -107,15 +108,7 @@ def load(save_file : str, save_name : str):
     #Menus
     for mi in range(len(my_menus)):
         #Menu
-        my_elements = [None]*len(my_menus[mi]["elements"])
-        for me_i, me in enumerate(my_menus[mi]["elements"]):
-            my_element_name = get_key(me)
-            if classes.get(my_element_name)==None:
-                print(f"ERROR: no class type '{my_element_name}'")
-            else:
-                my_elements[me_i] = classes[my_element_name](*list(get_val(me).values()))
-                
-        ui_config.menus[mi] = Menu(my_elements, my_menus[mi]["rect"], classes[get_key(my_menus[mi]["in_transition"])](*list(get_val(my_menus[mi]["in_transition"]).values())), classes[get_key(my_menus[mi]["out_transition"])](*list(get_val(my_menus[mi]["out_transition"]).values())), *list(my_menus[mi].values())[4:])
+        ui_config.menus[mi] = deserialize(my_menus[mi])
     return 0
 
 def serialize(obj):
@@ -127,17 +120,31 @@ def serialize(obj):
         return {"Fade_Transition" :  {"life" : obj.l, "fade_setting" : obj.get_fade_setting(), "color" : c_t(obj.col), "fade_modifier" : obj.get_fade_modifier()}}
     elif isinstance(obj, classes["Button"]):
         #Button contructor arguments
-        return {"Button" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls()}}
+        return {"Button" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a,"action_name" : obj.get_action_name(), "color" : c_t(obj.col), "image_name" : obj.i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_inflation" : obj.get_highlight_inflation(), "click_inflation" : obj.get_click_inflation(), "continuous_call" : obj.get_multiple_calls(), "align_pos" : False}}
     elif isinstance(obj, classes["Label"]):
         #Label contructor arguments
-        return {"Label" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col)}}
+        return {"Label" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "align_pos" : False}}
     elif isinstance(obj, classes["Text"]):
         #Text contructor arguments
-        return {"Text" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col(), "recalculate text bounds" : False}}
+        return {"Text" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "highlight_col" : obj.get_highlight_col(), "recalculate text bounds" : False, "align_pos" : False}}
     elif isinstance(obj, classes["Entry"]):
         #Entry contructor arguments
-        return {"Entry" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "clamp_text" : obj.get_if_clamp()}}
+        return {"Entry" : {"rect" : (obj.r.left, obj.r.top, obj.r.width, obj.r.height), "alignment" : obj.a, "text_height" : obj.get_text_height(), "color" : c_t(obj.col), "image_name" : obj.i_n, "border_width" : obj.b_w, "border_color" : c_t(obj.b_col), "border_image_name" : obj.b_i_n, "highlight_col" : obj.get_highlight_col(), "highlight_image_name" : obj.get_highlight_img_name(), "text" : obj.t, "font" : obj.f_n, "text_color" : c_t(obj.t_col), "clamp_text" : obj.get_if_clamp(), "align_pos" : False}}
     
+def deserialize(obj):
+    if get_key(obj)=="elements":
+        #Menu
+        my_elements = [None]*len(obj["elements"])
+        for me_i, me in enumerate(obj["elements"]):
+            my_elements[me_i] = deserialize(me)
+                
+        return Menu(my_elements, obj["rect"], classes[get_key(obj["in_transition"])](*list(get_val(obj["in_transition"]).values())), classes[get_key(obj["out_transition"])](*list(get_val(obj["out_transition"]).values())), *list(obj.values())[4:])
+    else:
+        my_element_name = get_key(obj)
+        if classes.get(my_element_name)==None:
+            print(f"ERROR: no class type '{my_element_name}'")
+        else:
+            return classes[my_element_name](*list(get_val(obj).values()))
     
 
 def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : pygame.Rect, text_height : int = None, flex_text : bool = True, display : bool = True):
@@ -161,8 +168,7 @@ def fit_text_to_rect(text : str, font_col, font : pygame.font.Font, fit_rect : p
     if wrap<0:
         print("ERROR: could not wrap text:", text)
         return
-    if display: return render_paragraph(formatted_text, font_col, font, fit_rect, t_h, flex_text)
-    else: return formatted_text
+    return formatted_text
 def line_width(text : str, font_col, font : str, height):
     w, h = font.render(text, True, font_col).get_rect().size
     w_to_h = w/h
@@ -199,6 +205,9 @@ def new_thingy(choice : str, trans_out = None):
         ui_config.menus[ui_config.current_menu_index].menu_elements.append(Text(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), input("Text: "), font_input(), color_input("Text color"), color_input("Highlight color")))
     elif choice.lower()=="entry":
         ui_config.menus[ui_config.current_menu_index].menu_elements.append(Entry(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: "), color_input("Color"), img_input("Background"), int_input("Border widith: "), color_input("Border color"), img_input("Border image"), color_input("Highlight color"), img_input("Background when highlighted"), input("Entry text: "), font_input(), color_input("Text color")))
+    elif choice.lower()=="paragraph":
+        ui_config.menus[ui_config.current_menu_index].menu_elements.append(Paragraph(pygame.Rect(int_input("Pos x: ",(0,ui_config.display_dimensions[0])), int_input("Pos y: ",(0,ui_config.display_dimensions[1])), int_input("Width: ",(0,ui_config.display_dimensions[0])), int_input("Height: ",(0,ui_config.display_dimensions[1]))), choice_input("Alignment: ", alignments), int_input("Text height: "), input("Text: "), font_input(), color_input("Text color")))
+    
     print("\nComplete!\n")
 
 #-------------------------------------------------------Menu and Transitions---------------------------------------------------------------
@@ -309,11 +318,11 @@ class Menu:
 
 #------------------------------------------------------------------Menu Elements------------------------------------------------------------------
 class Menu_Element:
-    def __init__(self, rect : pygame.Rect, align : str) -> None:
-        if isinstance(rect, list): rect = pygame.Rect(rect)
+    def __init__(self, rect : pygame.Rect, align : str, align_pos = True) -> None:
+        if not isinstance(rect, pygame.Rect): rect = pygame.Rect(rect)
         self.r = rect
         self.a = align
-        self.align()
+        if align_pos: self.align()
     def align(self):
         if self.a=="nw":
             pass
@@ -333,8 +342,10 @@ class Menu_Element:
     def display(self):
         pass #Display
 class Text_Element(Menu_Element):
-    def __init__(self, rect : pygame.Rect, align : str, text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
-        super().__init__(rect, align)
+    def __init__(self, rect : pygame.Rect, align : str, 
+                 
+                 text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0), align_pos = True) -> None:
+        super().__init__(rect, align, align_pos)
 
         self.t = text
         self.t_col = text_col
@@ -347,8 +358,8 @@ class Text_Box_Element(Text_Element):
                  
                  col = (200,200,200), img_name : str = None,
                  
-                 border_width = 20, border_color = (0,0,0), border_img_name : str = None) -> None:
-        super().__init__(rect, align, text, font_name, text_col)
+                 border_width = 20, border_color = (0,0,0), border_img_name : str = None, align_pos = True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, align_pos)
         self.col = col
 
         self.i_n = img_name
@@ -378,8 +389,8 @@ class Button(Text_Box_Element):
                  
                  text : str = "Press Me", font_name : str = "Helvetica", text_col = (0,0,0), 
                  
-                 inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+                 inflate_on_hightlight = 2, inflate_on_click = 4, multiple_calls = False, align_pos = True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name, align_pos)
 
         '''self.d = self._Text_Elementd
         self.t = self._Text_Elementt
@@ -460,7 +471,7 @@ class Button(Text_Box_Element):
         else: pygame.draw.rect(ui_config.screen, self.col, self.r)
         #Draw text
         if not self.t=="":
-            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
+            fit_text_to_rect(self.t, self.t_col, self.f, self.r)
         #print("Draw button")
     def get_action(self):
         return button_funcs[self.__func_n]
@@ -483,8 +494,8 @@ class Label(Text_Box_Element):
                  
                  border_width = 20, border_color = (0,0,0), border_img_name : str = None, 
                  
-                 text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0)) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+                 text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0), align_pos = True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name, align_pos)
         '''self.p = self._Menu_Elementp
         self.__a = self._Menu_Element__a
         self.r = self._Text_Elementr
@@ -518,15 +529,15 @@ class Label(Text_Box_Element):
         else: pygame.draw.rect(ui_config.screen, self.col, self.r)
         #Draw text
         if not self.t=="":
-            fit_text_to_rect(self.t, self.t_col, self.f, self.r), self.r.topleft
+            fit_text_to_rect(self.t, self.t_col, self.f, self.r)
         #print("Draw label")
 class Text(Text_Element):
     def __init__(self, rect : pygame.Rect, align : str,
                  
                  text = "Awesome Label", font_name : str = "Helvetica", text_col = (0,0,0), 
                  
-                 highlight_col = (240,240,240), recalc_rect = True) -> None:
-        super().__init__(rect, align, text, font_name, text_col)
+                 highlight_col = (240,240,240), recalc_rect = True, align_pos = True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, align_pos)
         
         self.__h_col = highlight_col
         self.__o_col = self.t_col
@@ -540,10 +551,10 @@ class Text(Text_Element):
         global update_display
         if self.r.collidepoint(mouse_pos):
             #Text being highlighted
-            self.__col = self.__h_col
+            self.t_col = self.__h_col
         else:
             #Text not being highlighted
-            self.__col = self.__o_col
+            self.t_col = self.__o_col
         
     def display(self):
         #self.r = pygame.Rect(100, 100, 400, 400)
@@ -562,8 +573,8 @@ class Entry(Text_Box_Element):
                  
                  highlight_col = (240,240,240), highlight_img_name : str = None, 
                  
-                 text = "", font_name : str = "Helvetica", text_col = (0,0,0), clamp_text : bool = True) -> None:
-        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name)
+                 text = "", font_name : str = "Helvetica", text_col = (0,0,0), clamp_text : bool = True, align_pos = True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, col, img_name, border_width, border_color, border_img_name, align_pos)
         '''self.d = self._Text_Elementd
         self.r = self._Text_Elementr
 
@@ -598,9 +609,19 @@ class Entry(Text_Box_Element):
         self.__last_key = None
 
         self.__ct = clamp_text
+        self.__reformat = True
 
     def update(self, mouse_pos: tuple, clicking: bool, key_event=None):
         global update_display
+        if self.__reformat:
+            #Reformat text
+            display_text = fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False)
+            if self.__t_h==None: h = self.r.height
+            else: h = self.__t_h*(1+display_text.count("\n"))
+            w, h = paragraph_dim(display_text, self.t_col, self.f, h)
+            self.__t_r = pygame.Rect(self.r.left, self.r.top, w, h)
+            self.__reformat = False
+
         if self.__selected and not key_event==None:
             if self.__type_cooldown<=0 or not self.__last_key==key_event.key:
                 if key_event.key==pygame.K_BACKSPACE:
@@ -616,11 +637,7 @@ class Entry(Text_Box_Element):
                 update_display = True
                 self.__type_cooldown = 5
 
-                display_text = fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False, False)
-                if self.__t_h==None: h = self.r.height
-                else: h = self.__t_h*(1+display_text.count("\n"))
-                w, h = paragraph_dim(display_text, self.t_col, self.f, h)
-                self.__t_r = pygame.Rect(self.r.left, self.r.top, w, h)
+                self.__reformat = True
 
                 self.__last_key = key_event.key
 
@@ -662,18 +679,39 @@ class Entry(Text_Box_Element):
         if not self.t=="":
             if self.__ct:
                 ui_config.screen.blit(pygame.transform.scale(self.f.render(self.t, True, self.t_col), self.__t_r.size), self.r.topleft)
-            else: fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False), self.r.topleft
+            else: fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False)
         #print("Draw entry")
     def get_text_height(self):
         return self.__t_h
-    def get_highlight_col(self):
-        return (self.__h_col[0], self.__h_col[1], self.__h_col[2])
-    def get_highlight_img_name(self):
-        return self.__h_i_n
+    def inc_text_height(self, amount):
+        self.__t_h+=amount
+        self.__reformat = True
+    def dec_text_height(self, amount):
+        self.__t_h-=amount
+        self.__reformat = True
+
     def get_if_clamp(self):
         return self.__ct
-    
-classes = {"Menu" : Menu, "Fade_Transition" : Fade_Transition, "Button" : Button, "Label" : Label, "Text" : Text, "Entry" : Entry}
+class Paragraph(Text_Element):
+    def __init__(self, rect: pygame.Rect, align: str, 
+                 
+                 text_height : int, text: str = "", font_name: str = "Helvetica", text_col=(0, 0, 0), align_pos=True) -> None:
+        super().__init__(rect, align, text, font_name, text_col, align_pos)
+        self.__t_h = text_height
+        
+        #Reformat text
+        self.t = fit_text_to_rect(self.t, self.t_col, self.f, self.r, self.__t_h, False)
+        if self.__t_h==None: h = self.r.height
+        else: h = self.__t_h*(1+self.t.count("\n"))
+        w, h = paragraph_dim(self.t, self.t_col, self.f, h)
+        self.__t_r = pygame.Rect(self.r.left, self.r.top, w, h)
+
+    def display(self):
+        if not self.t=="":
+            render_paragraph(self.t, self.t_col, self.f, self.__t_r, self.__t_h, False)
+
+
+classes = {"Menu" : Menu, "Fade_Transition" : Fade_Transition, "Button" : Button, "Label" : Label, "Text" : Text, "Entry" : Entry, "Paragraph" : Paragraph}
 
 
 #--------------------------------------------------------------------------------------Put it together-----------------------------------------------------------------------

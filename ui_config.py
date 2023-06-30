@@ -12,7 +12,6 @@ current_menu_index = -1
 next_menu_index = -1
 
 #If true display current menu (if something on screen changes)
-update_display = True
 redraw_stuff = True
 
 exit_loop = False

@@ -1,0 +1,107 @@
+{
+    "Blueberry Muffins": {
+        "file_version": 1,
+        "screen_size": [
+            1000,
+            800
+        ],
+        "open_menu": 0,
+        "menus": [
+            {
+                "elements": [
+                    {
+                        "Text": {
+                            "rect": [
+                                100,
+                                100,
+                                800,
+                                100
+                            ],
+                            "alignment": "nw",
+                            "text": "I like blueberry muffins!",
+                            "font": "dlkfgj",
+                            "text_color": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "highlight_col": [
+                                0,
+                                0,
+                                255
+                            ],
+                            "recalculate text bounds": false
+                        }
+                    },
+                    {
+                        "Label": {
+                            "rect": [
+                                400,
+                                300,
+                                200,
+                                200
+                            ],
+                            "alignment": "center",
+                            "color": [
+                                3,
+                                45,
+                                2
+                            ],
+                            "image_name": "blueberry_muffin.gif",
+                            "border_width": 15,
+                            "border_color": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "border_image_name": null,
+                            "text": "",
+                            "font": "",
+                            "text_color": [
+                                0,
+                                0,
+                                0
+                            ]
+                        }
+                    }
+                ],
+                "rect": [
+                    100,
+                    100,
+                    800,
+                    600
+                ],
+                "in_transition": {
+                    "Fade_Transition": {
+                        "life": 100,
+                        "fade_setting": true,
+                        "color": [
+                            0,
+                            0,
+                            255
+                        ],
+                        "fade_modifier": 2
+                    }
+                },
+                "out_transition": {
+                    "Fade_Transition": {
+                        "life": 100,
+                        "fade_setting": true,
+                        "color": [
+                            0,
+                            0,
+                            255
+                        ],
+                        "fade_modifier": 2
+                    }
+                },
+                "bg_color": [
+                    0,
+                    255,
+                    255
+                ],
+                "bg_image_name": null
+            }
+        ]
+    }
+}
